@@ -8,7 +8,7 @@
 PACKAGE=trilinos
 VERSIONS='
   12.14.1:10a88f034b8f91904a98970c00fa88b7f4acd59429d2c4870a60c6e297fc044a
-  12.18.1:8a6b8e676c548ca9da0c02671bad2169380bc59d8bd12f9960948898dea18d77
+  12.18.1:f170a3e92dc8cca338606223fbbce20ee482b863c607bb9bac6730656aec8c69
 '
 
 
@@ -88,7 +88,7 @@ fn_check_link()
 extern "C" { int $2(); }
 int main(){ $2(); }
 EOF
-  { CC -L$prefix/lib conftest.c >/dev/null 2>&1 && rm conftest.* ; } \
+  { CC -L$prefix/lib conftest.c -ldl >/dev/null 2>&1 && rm conftest.* ; } \
     || fn_error "requires $1"
 }
 
@@ -275,6 +275,9 @@ case "$compiler" in
     CFLAGS="-hnodwarf -hnomessage=554:511:10144:1836:1838 $CFLAGS"
     # 12489 to suppress warnings about constexpr.
     CXXFLAGS="-hnomessage=10143:12489 $CXXFLAGS"
+    ;;
+  gnu)
+    FFLAGS="-fallow-argument-mismatch $FFLAGS"
     ;;
   intel)
     CPPFLAGS="-DGTEST_USE_OWN_TR1_TUPLE $CPPFLAGS"
