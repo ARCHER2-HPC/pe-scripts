@@ -3,6 +3,26 @@
 These scripts are intended to be used for building
 software products under the Cray PE environment.
 
+## Archer2 Specific Information
+
+There are currently three additional branches in this repository:
+
+* cpe-aocc
+* cpe-cray
+* cpe-gnu
+
+with relevant changes for the given programming environment. Please commit
+any relevant updates to the appropriate branch (not the master). Comments
+for specific programming environments are also available in the separate
+branches.
+
+### Archer2 general comments
+
+* I have had to change the `sha256sum` hash for the Trilinos package (cf. the
+upstream). This I believe is related to the more recent version of git on
+Archer2 used to generate the tar package. Earlier versions of git produce
+the original checksum.
+
 ## Supported Products
 
 * TPSL - Cray's collection of third-party scientific libraries
