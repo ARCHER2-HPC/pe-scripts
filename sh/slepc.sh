@@ -38,7 +38,7 @@ fn_check_link()
 int $2();
 int main(){ $2(); }
 EOF
-  { cc -L$prefix/lib conftest.c >/dev/null 2>&1 && rm conftest.* ; } \
+  { cc -L$prefix/lib conftest.c -ldl >/dev/null 2>&1 && rm conftest.* ; } \
     || fn_error "requires $1"
 }
 
