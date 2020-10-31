@@ -40,8 +40,12 @@ cd matio-$VERSION
   --enable-static \
   --disable-shared \
   || fn_error "configuration failed"
-make --jobs=$make_jobs install \
+make --jobs=$make_jobs \
   || fn_error "build failed"
+make --jobs=$make_jobs check \
+  || fn_error "tests failed"
+make install \
+  || fn_error "install failed"
 fn_checkpoint_tpsl
 
 # Local Variables:
