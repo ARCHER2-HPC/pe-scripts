@@ -102,8 +102,13 @@ case "$compiler" in
       || fn_error "patching C++11 flags for CCE"
     ;;
 esac
-make --jobs=$make_jobs install \
-  || fn_error "build failed"
+
+make --jobs=$make_jobs \
+    || fn_error "build failed"
+make test \
+    || fn_error "tests failed"
+make install \
+    || fn_error "install failed"
 fn_checkpoint_tpsl
 
 # Local Variables:
