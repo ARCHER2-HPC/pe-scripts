@@ -6,8 +6,10 @@
 ####
 
 PACKAGE=matio
-VERSION=1.5.13
-SHA256SUM=feadb2f54ba7c9db6deba8c994e401d7a1a8e7afd0fe74487691052b8139e5cb
+VERSIONS='
+  1.5.13:feadb2f54ba7c9db6deba8c994e401d7a1a8e7afd0fe74487691052b8139e5cb
+  1.5.18:5fad71a63a854d821cc6f4e8c84da837149dd5fb57e1e2baeffd85fa0f28fe25
+'
 
 _pwd(){ CDPATH= cd -- $1 && pwd; }
 _dirname(){ _d=`dirname -- "$1"`;  _pwd $_d; }
