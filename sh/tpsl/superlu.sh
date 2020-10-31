@@ -73,8 +73,12 @@ cmake \
   -DCMAKE_VERBOSE_MAKEFILE=ON \
   .. \
   || fn_error "configuration failed"
-make --jobs=$make_jobs install \
+make --jobs=$make_jobs \
   || fn_error "build failed"
+make test \
+  || fn_error "tests failed"
+make install \
+  || fn_error "install failed"
 fn_checkpoint_tpsl
 
 # Local Variables:
