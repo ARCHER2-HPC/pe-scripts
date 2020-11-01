@@ -92,7 +92,8 @@ cmake \
   -DTPL_PARMETIS_LIBRARIES="parmetis;metis" \
   -DTPL_PARMETIS_INCLUDE_DIRS="$prefix/include" \
   -DCMAKE_VERBOSE_MAKEFILE=ON \
-  -DMPIEXEC="${MPIEXEC:-`which mpiexec`}" \
+  -DMPIEXEC_EXECUTABLE:STRING="srun" \
+  -DMPIEXEC_MAX_NUMPROCS:STRING="128" \
   .. \
   || fn_error "configuration failed"
 case "$compiler" in
@@ -105,8 +106,6 @@ esac
 
 make --jobs=$make_jobs \
     || fn_error "build failed"
-make test \
-    || fn_error "tests failed"
 make install \
     || fn_error "install failed"
 fn_checkpoint_tpsl
