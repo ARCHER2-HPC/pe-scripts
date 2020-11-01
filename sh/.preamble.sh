@@ -196,6 +196,9 @@ case "$compiler" in
     PE_LDDIRS="-L`echo $gcc_lib_path | sed 's/:/ -L/g'`"
     PE_LIBS="-lgfortran -lgcc"
     OMPLIBS="-lgomp"
+    case $GCC_VERSION in
+      10.*) FFLAGS="$FFLAGS -fallow-argument-mismatch" ;;
+    esac
     case $CRAY_CPU_TARGET in
       x86_64) ARCHFLAGS="$X86FLAGS" ;;
       interlagos) ARCHFLAGS="-march=bdver1" ;;
