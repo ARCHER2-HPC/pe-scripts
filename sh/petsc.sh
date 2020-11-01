@@ -112,6 +112,17 @@ case "$compiler" in
   *) mpi_long_double=1 ;;
 esac
 
+# Needs to be restricted to Archer2
+case "$compiler" in
+  # Petsc wants to link MUMPS with CC, so..
+  crayclang)
+    MUMPS_EXTRA_LIBS="-lmpifort";;
+  gnu)
+    MUMPS_EXTRA_LIBS="-lmpifort";;
+  aocc)
+    MUMPS_EXTRA_LIBS="-lmpifort_aocc -lpgmath -lflang -lflangrti -lflangmain";;
+esac
+
 cat >configure-petsc.sh <<EOF
 #!/bin/sh
 exec ./configure \\
@@ -175,7 +186,7 @@ exec ./configure \\
   --with-ptscotch-lib="-L$prefix/lib -lptscotch -lscotch -lptscotcherr -lscotcherr" \\
   --with-mumps=1 \\
   --with-mumps-include=$prefix/include \\
-  --with-mumps-lib="-L$prefix/lib -lcmumps -ldmumps -lesmumps -lsmumps -lzmumps -lmumps_common -lptesmumps -lesmumps -lpord -lmpifort" \\
+  --with-mumps-lib="-L$prefix/lib -lcmumps -ldmumps -lesmumps -lsmumps -lzmumps -lmumps_common -lptesmumps -lesmumps -lpord ${MUMPS_EXTRA_LIBS}" \\
   --with-hdf5=1 \\
   --CFLAGS="$CFLAGS $OMPFLAG" \\
   --CPPFLAGS="-I$prefix/include $CPPFLAGS" \\
