@@ -140,7 +140,7 @@ case $PE_ENV in
       compiler=cray
     fi
     ;;
-  GNU|INTEL|PGI) compiler=`echo $PE_ENV | tr A-Z a-z` ;;
+  GNU|INTEL|PGI|AOCC) compiler=`echo $PE_ENV | tr A-Z a-z` ;;
   *) fn_error "could not detect compiler vendor" ;;
 esac
 
@@ -277,6 +277,12 @@ case "$compiler" in
     OMPLIBS="-lpgmp"
     CFLAGS="$FFLAGS $ARCHFLAGS"
     FFLAGS="$FFLAGS $ARCHFLAGS"
+    ;;
+  aocc)
+  # AOCC is rather conservative at the moment.
+    FFLAGS="-O2"
+    CFLAGS="-O3"
+    PE_LIBS="-lm"
     ;;
 esac                            # %{compiler}
 
