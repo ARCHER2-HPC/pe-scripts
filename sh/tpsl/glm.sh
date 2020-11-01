@@ -42,9 +42,16 @@ case $VERSION in
   0.9.9.6) patch --reverse -p1 <$top_dir/../patches/glm-cmake-install.patch \
              || fn_error "could not patch source" ;;
 esac
+
+case "$compiler" in
+  crayclang)
+    CXXFLAGS="-Wno-implicit-int-float-conversion $CXXFLAGS" ;;
+esac
+
 cmake \
   -DGLM_TEST_ENABLE=ON \
   -DCMAKE_CXX_COMPILER=CC \
+  -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
   -DCMAKE_INSTALL_LIBDIR=lib \
   -DCMAKE_INSTALL_PREFIX=$prefix \
   || fn_error "configuration failed"
