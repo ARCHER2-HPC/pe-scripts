@@ -66,7 +66,7 @@ CC = cc
 OPTC = $CPPFLAGS $CFLAGS $OMPFLAG
 FC = ftn
 FL = ftn
-OPTF = $FFLAGS $FOMPFLAG -fallow-argument-mismatch
+OPTF = $FFLAGS $FOMPFLAG
 CDEFS = -DAdd_
 
 LIBEXT = .a
