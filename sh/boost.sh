@@ -154,6 +154,8 @@ case $compiler in
     toolset=intel-linux ;;
   *clang)
     toolset=clang ;;
+  aocc)
+    toolset=clang ;;
   *)
     toolset=$compiler ;;
 esac
