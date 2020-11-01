@@ -69,7 +69,7 @@ exec ./configure \\
   CC=cc CXX=CC FC=ftn \\
   CFLAGS="$CFLAGS" \\
   CXXFLAGS="$CXXFLAGS" \\
-  FCFLAGS="$FFLAGS -fallow-argument-mismatch" \\
+  FCFLAGS="$FFLAGS" \\
   FCLIBS=" " \
   --prefix=$prefix \\
   --with-pic --disable-shared \\

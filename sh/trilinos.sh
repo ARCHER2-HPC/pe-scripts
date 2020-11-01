@@ -277,7 +277,7 @@ case "$compiler" in
     CXXFLAGS="-hnomessage=10143:12489 $CXXFLAGS"
     ;;
   gnu)
-    FFLAGS="-fallow-argument-mismatch $FFLAGS"
+    FFLAGS="$FFLAGS"
     ;;
   intel)
     CPPFLAGS="-DGTEST_USE_OWN_TR1_TUPLE $CPPFLAGS"
