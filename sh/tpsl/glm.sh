@@ -43,12 +43,17 @@ case $VERSION in
              || fn_error "could not patch source" ;;
 esac
 cmake \
-  -DGLM_TEST_ENABLE=OFF \
+  -DGLM_TEST_ENABLE=ON \
+  -DCMAKE_CXX_COMPILER=CC \
   -DCMAKE_INSTALL_LIBDIR=lib \
   -DCMAKE_INSTALL_PREFIX=$prefix \
   || fn_error "configuration failed"
-make install \
+make -j $make_jobs \
   || fn_error "build failed"
+make test \
+  || fn_error "tests failed"
+make install \
+  || fn_error "install failed"
 fn_checkpoint_tpsl
 
 # Local Variables:
