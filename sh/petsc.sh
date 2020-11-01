@@ -140,7 +140,7 @@ exec ./configure \\
   --known-sizeof-size_t=8 \\
   --known-sizeof-void-p=8 \\
   --with-ar=ar \\
-  --with-batch=1 \\
+  --with-batch=0 \\
   --with-cc=cc \\
   --with-clib-autodetect=0 \\
   --with-cxx=CC \\
@@ -160,6 +160,7 @@ exec ./configure \\
   --with-shared-libraries=0 \\
   --with-mpi-lib=[] \\
   --with-mpi-include=[] \\
+  --with-mpiexec=srun \\
   --with-blas-lapack=1 \\
   --with-superlu=1 \\
   --with-superlu-dir=$prefix \\
