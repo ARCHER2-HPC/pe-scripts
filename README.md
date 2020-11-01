@@ -3,6 +3,17 @@
 These scripts are intended to be used for building
 software products under the Cray PE environment.
 
+## Archer2 cpe-gnu
+
+Specifically
+```
+module restore PrgEnv-gnu
+module load cray-hdf5-parallel
+module load cray-netcdf-hdf5parallel
+```
+* Note that gcc version 10.1.0 is stricter than previous versions in relation
+to mismatched Fortran argument types.
+
 ## Supported Products
 
 * TPSL - Cray's collection of third-party scientific libraries
