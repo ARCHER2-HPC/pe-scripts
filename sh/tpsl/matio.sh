@@ -42,8 +42,9 @@ cd matio-$VERSION
   || fn_error "configuration failed"
 make --jobs=$make_jobs \
   || fn_error "build failed"
-make --jobs=$make_jobs check \
-  || fn_error "tests failed"
+# Tests take a little too long (few minutes) for comfort, so comment out...
+#make --jobs=$make_jobs check \
+#  || fn_error "tests failed"
 make install \
   || fn_error "install failed"
 fn_checkpoint_tpsl
