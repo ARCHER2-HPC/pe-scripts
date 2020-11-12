@@ -189,6 +189,7 @@ case "$compiler" in
     PE_LIBS="-lfi -lf -lu -lcraymath -lcraymp -lm"
     ;;
   gnu)
+    CFLAGS="-O3 -ffast-math"
     FFLAGS="-O3 -ffast-math"
     X86FLAGS="-march=x86-64"
     gcc_lib_path=`gcc -print-search-dirs \
@@ -237,7 +238,7 @@ case "$compiler" in
         ;;
       "") ARCHFLAGS="" ;;
     esac
-    CFLAGS="$FFLAGS $ARCHFLAGS"
+    CFLAGS="$CFLAGS $ARCHFLAGS"
     FFLAGS="$FFLAGS $ARCHFLAGS"
     ;;
   intel)
