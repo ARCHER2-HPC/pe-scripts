@@ -5,16 +5,13 @@ software products under the Cray PE environment.
 
 ## Archer2 Specific Information
 
-There are currently three additional branches in this repository:
+There is an additional branch in this repository covering three programming
+environments on Archer2 (CRAYCLANG, GNU, and AOCC):
 
-* cpe-aocc
-* cpe-cray
-* cpe-gnu
+* cse-develop
 
-with relevant changes for the given programming environment. Please commit
-any relevant updates to the appropriate branch (not the master). Comments
-for specific programming environments are also available in the separate
-branches.
+Please commit any relevant updates to this branch (not the master). A further tagged
+version is available for the standard releases available on the machine.
 
 ### Archer2 general comments
 
@@ -22,6 +19,9 @@ branches.
 upstream). This I believe is related to the more recent version of git on
 Archer2 used to generate the tar package. Earlier versions of git produce
 the original checksum.
+* A number of tests have been enabled as part of the build stage if the overhead
+in time (as the likelihood of failure) is low enough.
+* An option to build shared libraries has been added to the preamble.
 
 ## Supported Products
 
