@@ -3,9 +3,9 @@
 These scripts are intended to be used for building
 software products under the Cray PE environment.
 
-## Archer2 cpe-gnu
+## Archer2
 
-Specifically
+Load the relevant Programming Environment and additional modules, e.g., 
 ```
 module restore PrgEnv-gnu
 module load cray-hdf5-parallel
