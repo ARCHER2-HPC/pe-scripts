@@ -6,6 +6,7 @@
 # Requires the "PACKAGE" variable be defined before sourcing.
 
 prefix=${TMPDIR:-/tmp}/$USER/_install
+make_shared=1
 make_jobs=1
 show_help=false
 
@@ -286,6 +287,12 @@ case "$compiler" in
     PE_LIBS="-lm"
     ;;
 esac                            # %{compiler}
+
+if test $make_shared; then
+    FFLAGS="$FFLAGS $PICFLAG"
+    CFLAGS="$CFLAGS $PICFLAG"
+    CXXFLAGS="$PICFLAG"
+fi
 
 : ${FOMPFLAG="$OMPFLAG"}
 
