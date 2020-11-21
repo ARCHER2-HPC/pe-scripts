@@ -38,7 +38,7 @@ cd matio-$VERSION
   CFLAGS="$CFLAGS" \
   --enable-extended-sparse \
   --enable-static \
-  --disable-shared \
+  --enable-shared \
   || fn_error "configuration failed"
 make --jobs=$make_jobs \
   || fn_error "build failed"
