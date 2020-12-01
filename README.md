@@ -57,7 +57,8 @@ and can be run to install each product, for example:
 ```sh
 $ git clone https://github.com/Cray/pe-scripts
 $ cd pe-scripts
-$ module add PrgEnv-gnu cmake cray-mpich cray-hdf5-parallel cray-netcdf-hdf5parallel
+$ module restore PrgEnv-gnu
+$ module load cray-hdf5-parallel cray-netcdf-hdf5parallel
 $ prefix=`pwd`/_install
 $ ./sh/tpsl.sh --prefix=$prefix --jobs=8
 $ ./sh/petsc.sh --prefix=$prefix --jobs=8
