@@ -6,7 +6,8 @@
 # Requires the "PACKAGE" variable be defined before sourcing.
 
 prefix=${TMPDIR:-/tmp}/$USER/_install
-make_shared=1
+make_shared=0
+make_openmp=1
 make_jobs=1
 show_help=false
 
@@ -68,6 +69,10 @@ for arg_option ; do
       arg_prev=prefix ;;
     -prefix=* | --prefix=* | --pref=* | --pref=* | --pre=* | --pr=* | --p=*)
       prefix=$arg_optarg ;;
+    -shared | --shared)
+      make_shared=1 ;;
+    -openmp | --openmp)
+      make_openmp=1 ;;
     -j | --jobs | --job | --jo | --j)
       sh_prev=make_jobs ;;
     -j=* | --jobs=* | --job=* | --jo=* | --j=*)
@@ -292,6 +297,14 @@ if test $make_shared; then
     FFLAGS="$FFLAGS $PICFLAG"
     CFLAGS="$CFLAGS $PICFLAG"
     CXXFLAGS="$PICFLAG"
+fi
+
+if test $make_openmp -eq 1 ; then
+  printf "Using OpenMP\n"
+else
+  printf "Not using OpenMP\n"
+  OMPFLAG=""
+  FOMPFLAG=""
 fi
 
 : ${FOMPFLAG="$OMPFLAG"}
