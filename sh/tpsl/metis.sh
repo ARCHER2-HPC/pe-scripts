@@ -31,7 +31,7 @@ tar xf metis-$VERSION.tar.gz \
   || fn_error "could not untar source"
 cd metis-$VERSION
 make config \
-  prefix="$prefix" cc=cc CFLAGS="$CFLAGS $OMPFLAG" \
+  prefix="$prefix" cc=cc CFLAGS="$CFLAGS $OMPFLAG" openmp=${make_openmp} \
   || fn_error "configuration failed"
 make --jobs=$make_jobs install \
   || fn_error "build failed"
