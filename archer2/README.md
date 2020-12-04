@@ -44,19 +44,18 @@ Modulefiles are installed to
 
 Some details for each package will appear here.
 
-| Package      | Version  | Dependencies            | OpenMP? | MPI |
-|--------------|----------|-------------------------|---------|-----|
-| glm          | 0.9.9.6  | none                    | no      | no  |
-| hypre        | 2.18.0   | none                    | -       | yes |
-| matio        | 1.5.18   | none                    | no      | no  |
-| metis        | 5.1.0    | none                    | yes     | no  |
-| mumps        | 5.2.1    | metis, parmetis, scotch |         |     |
-| parmetis     | 4.0.3    | metis                   | -       | yes |
-| scotch       | 6.0.9    | none                    | -       | -   |
-| sundials     | tbc      | none                    | -       | -   |
-| scotch       | 6.0.9    | none                    | -       | -   |
-| superlu      | 5.2.1    | metis                   | -       | no  |
-| superlu-dist | 6.1.1    | metis, parmetis         | -       | yes |
+| Package      | Version  | Dependencies            | OpenMP? | MPI? |
+|--------------|----------|-------------------------|---------|------|
+| glm          | 0.9.9.6  | none                    | no      | no   |
+| hypre        | 2.18.0   | none                    | -       | yes  |
+| matio        | 1.5.18   | none                    | no      | no   |
+| metis        | 5.1.0    | none                    | yes     | no   |
+| mumps        | 5.2.1    | metis, parmetis, scotch |         | yes  |
+| parmetis     | 4.0.3    | none                    | yes     | yes  |
+| scotch       | 6.0.9    | none                    | no      | yes  |
+| sundials     | tbc      | none                    | -       | -    |
+| superlu      | 5.2.1    | metis                   | -       | no   |
+| superlu-dist | 6.1.1    | metis, parmetis         | -       | yes  |
 
 
 
