@@ -60,3 +60,10 @@ function moduleInstallDirectory {
     local cse_root=${prefix}
     echo "${cse_root}/archer2-modules/modulefiles-cse-libs"
 }
+
+function moduleUseLibs {
+
+    local cse_root=${prefix}
+    module use ${cse_root}/archer2-modules/modulefiles-cse-libs
+
+}
