@@ -52,3 +52,11 @@ function ccSharedFromStatic {
     cc -shared -o ${prefix}/lib${name}.so \
        -Wl,--whole-archive ${prefix}/lib${name}.a -Wl,--no-whole-archive
 }
+
+function moduleInstallDirectory {
+
+    # Return path for library modulefiles
+    
+    local cse_root=${prefix}
+    echo "${cse_root}/archer2-modules/modulefiles-cse-libs"
+}
