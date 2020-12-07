@@ -5,7 +5,7 @@ set -e
 function pcPackageConfigFiles {
 
     # Run craypkg-gen and then patch up the results
-    
+
     local prefix=${1} # pc files will be ${prefix}/lib/pkgconfig/*.pc
     local -n pc=${2}  # pcmap associative array
     
@@ -17,7 +17,6 @@ function pcPackageConfigFiles {
     local pcfiles="${prefix}/lib/pkgconfig"
     pcFileUpdate ${pcfiles} pc
 
-    # move pcFileWritePackageTopLevel to here
 }
 
 
@@ -49,7 +48,7 @@ function pcFileUpdate {
     
     printf "Generating top-level package pcfile\n"
     
-    pcFileWritePackageFile "${prefix}/metis.pc" pchm files
+    pcFileWritePackageFile "${prefix}/${pchm[name]}.pc" pchm files
 }
 
 function pcFileWritePackageFile {
