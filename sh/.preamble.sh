@@ -7,7 +7,7 @@
 
 prefix=${TMPDIR:-/tmp}/$USER/_install
 make_shared=0
-make_openmp=1
+make_openmp=0
 make_jobs=1
 show_help=false
 
