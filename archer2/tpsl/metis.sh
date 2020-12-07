@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# TODO: extra library -lm required in AOCC Libs:
+
 set -e
 
 # script: full path to this script
@@ -12,6 +14,8 @@ source ${script_root}/pkgconfig-lib.sh
 source ${script_root}/versions.sh
 source ${script_root}/command_line.sh
 
+source ${script_root}/tpsl/metis-test.sh
+
 function main {
 
     # Overall prefix must be supplied by command line
@@ -23,7 +27,7 @@ function main {
     metisBuildAocc ${install_root}
 
     metisInstallModuleFile
-    # metisInstallationTest
+    metisInstallationTest
 }
 
 function metisBuildAocc {
@@ -135,20 +139,12 @@ function metisPackageConfigFiles {
     pcPackageConfigFiles ${prefix} pcmap
 }
 
-function moduleInstallDirectory {
-
-    # Return path for library modulefiles
-    
-    local cse_root=${1}
-    echo "${cse_root}/archer2-modules/modulefiles-cse-libs"
-}
-
 function metisInstallModuleFile {
 
     local module_template=${script_root}/tpsl/metis/modulefile.tcl
 
     # Destination
-    local module_dir=$(moduleInstallDirectory ${prefix})
+    local module_dir=$(moduleInstallDirectory)
     local module_file=${module_dir}/metis/${METIS_VERSION}
 
     # Copy add update the template
