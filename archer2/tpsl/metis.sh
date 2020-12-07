@@ -2,6 +2,9 @@
 
 set -e
 
+# script: full path to this script
+# script_root: /path/as/far/as/archer2 directory
+
 script="$(readlink -fm "$0")"
 script_root="$(dirname "${script%/*}")"
 
@@ -13,12 +16,14 @@ function main {
 
     # Overall prefix must be supplied by command line
 
-    local install_root=${prefix}/metis/${METIS_VERSION}
+    local install_root=${prefix}/libs/metis/${METIS_VERSION}
 
     metisBuildCray ${install_root}
     metisBuildGnu  ${install_root}
     metisBuildAocc ${install_root}
 
+    metisInstallModuleFile
+    # metisInstallationTest
 }
 
 function metisBuildAocc {
@@ -128,6 +133,32 @@ function metisPackageConfigFiles {
     pcmap[has_openmp]=1
     
     pcPackageConfigFiles ${prefix} pcmap
+}
+
+function moduleInstallDirectory {
+
+    # Return path for library modulefiles
+    
+    local cse_root=${1}
+    echo "${cse_root}/archer2-modules/modulefiles-cse-libs"
+}
+
+function metisInstallModuleFile {
+
+    local module_template=${script_root}/tpsl/metis/modulefile.tcl
+
+    # Destination
+    local module_dir=$(moduleInstallDirectory ${prefix})
+    local module_file=${module_dir}/metis/${METIS_VERSION}
+
+    # Copy add update the template
+    cp ${module_template} ${module_file}
+    sed -i "s%TEMPLATE_INSTALL_ROOT%${prefix}%" ${module_file}
+    sed -i "s%TEMPLATE_METIS_VERSION%${METIS_VERSION}%" ${module_file}
+
+    module use ${module_dir}
+    module load metis/${METIS_VERSION}
+    module unload metis
 }
 
 main
