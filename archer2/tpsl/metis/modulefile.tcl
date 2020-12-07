@@ -99,6 +99,7 @@ if { ! [ info exists env(PE_ENV) ] } {
 
     # Potential change while module is loaded not handled
     prepend-path PATH $product_curpath/bin
+    prepend-path LD_LIBRARY_PATH $product_curpath/lib
 
     # load or remove paths for CRAY_LD_LIBRARY_PATH
     if { ! [ module-info mode remove ] } {
