@@ -18,6 +18,9 @@ function main {
     parmetisBuildCray ${install_root}
     parmetisBuildGnu  ${install_root}
     parmetisBuildAocc ${install_root}
+
+    parmetisInstallModuleFile
+    parmetisInstallationTest
 }
 
 function parmetisBuildAocc {
@@ -134,6 +137,66 @@ function parmetisPackageConfigFiles {
     pcmap[has_openmp]=1
 
     pcPackageConfigFiles ${prefix} pcmap
+}
+
+function parmetisInstallModuleFile {
+
+    local module_template=${script_root}/tpsl/parmetis/modulefile.tcl
+
+    # Destination
+    local module_dir=$(moduleInstallDirectory)
+    local module_file=${module_dir}/parmetis/${PARMETIS_VERSION}
+
+    # Copy add update the template
+    cp ${module_template} ${module_file}
+    sed -i "s%TEMPLATE_INSTALL_ROOT%${prefix}%" ${module_file}
+    sed -i "s%TEMPLATE_PARMETIS_VERSION%${PARMETIS_VERSION}%" ${module_file}
+    sed -i "s%TEMPLATE_METIS_VERSION%${METIS_VERSION}%" ${module_file}
+
+    # Ensure this has worked
+    module use ${module_dir}
+    module load parmetis/${PARMETIS_VERSION}
+    module unload parmetis
+
+}
+
+function parmetisInstallationTest {
+
+    cd archer2/tpsl/parmetis
+    parmetisTest PrgEnv-cray
+    parmetisTest PrgEnv-gnu
+    parmetisTest PrgEnv-aocc
+    cd -
+
+}
+
+function parmetisTest {
+
+    local prgenv=${1}
+    local module_use=$(moduleInstallDirectory)
+
+    printf "Parmetis test for %s\n" "${prgenv}"
+    module -s restore ${prgenv}
+    module use ${module_use}
+
+    module load parmetis/${PARMETIS_VERSION}
+
+    cc parmetis-install.c
+
+    slurmAllocRun "srun -n 3 ./a.out"
+}
+
+function slurmAllocRun {
+
+    # Run command if we have a SLURM allocation
+    # (which we determine here by checking for non-zero SLURM_JOB_NAME)
+
+    command="${1}"
+
+    if [[ ! -z "${SLURM_JOB_NAME}" ]]; then
+	eval "${command}"
+    fi
+
 }
 
 main
