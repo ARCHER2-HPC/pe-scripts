@@ -104,15 +104,18 @@ if { ! [ info exists env(PE_ENV) ] } {
     prepend-path PATH $product_curpath/bin
     prepend-path LD_LIBRARY_PATH $product_curpath/lib
 
-    # load or remove paths for CRAY_LD_LIBRARY_PATH
+    # Also non-volatile
+    setenv ${ucName}_DIR ${product_curpath}  
+
+    # load or remove paths for CSE_LD_LIBRARY_PATH
     if { ! [ module-info mode remove ] } {
-      prepend-path CRAY_LD_LIBRARY_PATH $product_curpath/lib
+      prepend-path CSE_LD_LIBRARY_PATH $product_curpath/lib
     } else {
-      set oldpath $env(CRAY_LD_LIBRARY_PATH)
+      set oldpath $env(CSE_LD_LIBRARY_PATH)
       foreach mod [ split $oldpath ':' ] {
         if { [ expr [ lsearch [ split $mod '/' ] $lcName ] >= 0 ] } {
 	  # This is mode remove so prepend is remove
-          prepend-path CRAY_LD_LIBRARY_PATH $mod
+          prepend-path CSE_LD_LIBRARY_PATH $mod
         } 
       }
     }
