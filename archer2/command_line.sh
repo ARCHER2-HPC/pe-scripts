@@ -16,8 +16,12 @@ for arg in "$@" ; do
     esac
 done
 
-printf "Overall install prefix: %s\n" "${prefix}"
+install_root_libs=${prefix}/libs
+install_root_mods=${prefix}/archer2-modules/modulefiles-cse-libs
 
+printf "Overall install prefix: %s\n" "${prefix}"
+printf "Libraries to:           %s\n" "${install_root_libs}"
+printf "Module files to:        %s\n" "${install_root_mods}"
 
 function peEnvUpper {
 
