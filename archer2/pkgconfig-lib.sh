@@ -123,7 +123,7 @@ function pcFileRefactor {
     printf "${var_libdir}= %s\n" "${value_libdir}" >> ${pcnew}
     printf "${var_includedir}= %s\n" "${value_includedir}" >> ${pcnew} 
 
-    # Check those last two are correct
+    # Additional variables:
 
     printf "\n" >> ${pcnew}
     printf "cray_as_needed=\n" >> ${pcnew}
@@ -136,7 +136,7 @@ function pcFileRefactor {
     printf "Cflags: %s\n" "${cflags}" >> ${pcnew}
 
     # Libs: separate into an array for individual archives
-    # IFS is the internal field separator
+    # IFS is the internal field separator: a space
 
     IFS=" " read -r -a libs <<< "`pkg-config --libs-only-l ${pcfile}`"
 
@@ -145,6 +145,11 @@ function pcFileRefactor {
     for lib in "${libs[@]}"; do
       printf "\${cray_as_needed}%s\${cray_no_as_needed} " "${lib}" >> ${pcnew}
     done
+
+    if [[ -n ${pchash[extra_libs]} ]]; then
+      lib=${pchash[extra_libs]}
+      printf "\${cray_as_needed}%s\${cray_no_as_needed}" "${lib}" >> ${pcnew}
+    fi
 
     printf "\n" >> ${pcnew}
 
