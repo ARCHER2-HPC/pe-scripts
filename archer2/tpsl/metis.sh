@@ -129,12 +129,19 @@ function metisPackageConfigFiles {
     # pkgconfig files
     
     local prefix=${1}
+    local prgEnv=$(peEnvUpper)
     
     declare -A pcmap
     pcmap[name]="metis"
     pcmap[version]=${METIS_VERSION}
-    pcmap[description]="metis library for compiler"
+    pcmap[description]="metis library for ${prgEnv}"
     pcmap[has_openmp]=1
+    pcmap[extra_libs]=""
+
+    if [[ "${prgEnv}" == "AOCC" ]]; then
+	# AOCC requires -lm to ensure resolve math.h stuff
+	pcmap[extra_libs]="-lm"
+    fi
     
     pcPackageConfigFiles ${prefix} pcmap
 }
@@ -145,6 +152,11 @@ function metisInstallModuleFile {
 
     # Destination
     local module_dir=$(moduleInstallDirectory)
+
+    if [[ ! -d ${module_dir}/metis ]]; then
+	mkdir ${module_dir}/metis
+    fi
+
     local module_file=${module_dir}/metis/${METIS_VERSION}
 
     # Copy add update the template
