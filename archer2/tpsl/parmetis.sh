@@ -145,6 +145,11 @@ function parmetisInstallModuleFile {
 
     # Destination
     local module_dir=$(moduleInstallDirectory)
+
+    if [[ ! -d ${module_dir}/parmetis ]]; then
+	mkdir ${module_dir}/parmetis
+    fi
+
     local module_file=${module_dir}/parmetis/${PARMETIS_VERSION}
 
     # Copy add update the template
