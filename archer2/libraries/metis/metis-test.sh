@@ -8,7 +8,7 @@ graph_dir=`pwd`/metis-${METIS_VERSION}/graphs
 
 function metisInstallationTest {
 
-    cd archer2/tpsl/metis
+    cd archer2/libraries/metis
     metisTest PrgEnv-cray
     metisTest PrgEnv-gnu
     metisTest PrgEnv-aocc

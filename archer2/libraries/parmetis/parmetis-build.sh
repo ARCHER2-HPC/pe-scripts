@@ -169,7 +169,7 @@ function parmetisInstallModuleFile {
 
 function parmetisInstallationTest {
 
-    cd archer2/tpsl/parmetis
+    cd ${script_dir}
     parmetisTest PrgEnv-cray
     parmetisTest PrgEnv-gnu
     parmetisTest PrgEnv-aocc
