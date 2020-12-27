@@ -3,7 +3,8 @@
 set -e
 
 script="$(readlink -fm "$0")"
-script_root="$(dirname "${script%/*}")"
+script_dir="$(dirname "${script}")"
+script_root="$(dirname "${script%/*/*}")"
 
 source ${script_root}/pkgconfig-lib.sh
 source ${script_root}/versions.sh
@@ -100,7 +101,7 @@ function parmetisBuildMPI {
 
     local prefix=${1}
 
-    ./sh/tpsl/parmetis.sh --jobs=16 --prefix=${prefix}
+    ./sh/tpsl/parmetis.sh --jobs=16 --prefix=${prefix} --modules
 
     local pe=$(peEnvLower)
     local newname=libparmetis_${pe}_mpi.a
@@ -118,7 +119,7 @@ function parmetisBuildMPIOpenMP {
     local pe=$(peEnvLower)
     local newname=libparmetis_${pe}_mpi_mp.a
 
-    ./sh/tpsl/parmetis.sh --jobs=16 --prefix=${prefix} --openmp
+    ./sh/tpsl/parmetis.sh --jobs=16 --prefix=${prefix} --openmp --modules
     mv ${prefix}/lib/libparmetis.a ${prefix}/lib/${newname}
     ccSharedFromStatic ${prefix}/lib parmetis_${pe}_mpi_mp
 }
@@ -129,11 +130,12 @@ function parmetisPackageConfigFiles {
     # pkgconfig files
     
     local prefix=${1}
+    local prgEnv=$(peEnvUpper)
     
     declare -A pcmap
     pcmap[name]="parmetis"
     pcmap[version]=${PARMETIS_VERSION}
-    pcmap[description]="parmetis library for compiler"
+    pcmap[description]="parmetis library for ${prgEnv}"
     pcmap[has_openmp]=1
 
     pcPackageConfigFiles ${prefix} pcmap
@@ -141,7 +143,7 @@ function parmetisPackageConfigFiles {
 
 function parmetisInstallModuleFile {
 
-    local module_template=${script_root}/tpsl/parmetis/modulefile.tcl
+    local module_template=${script_dir}/modulefile.tcl
 
     # Destination
     local module_dir=$(moduleInstallDirectory)
@@ -189,19 +191,6 @@ function parmetisTest {
     cc parmetis-install.c
 
     slurmAllocRun "srun -n 3 ./a.out"
-}
-
-function slurmAllocRun {
-
-    # Run command if we have a SLURM allocation
-    # (which we determine here by checking for non-zero SLURM_JOB_NAME)
-
-    command="${1}"
-
-    if [[ ! -z "${SLURM_JOB_NAME}" ]]; then
-	eval "${command}"
-    fi
-
 }
 
 main

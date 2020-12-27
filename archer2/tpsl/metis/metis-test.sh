@@ -13,6 +13,7 @@ function metisInstallationTest {
     metisTest PrgEnv-gnu
     metisTest PrgEnv-aocc
     cd -
+    printf "Completed metis installation test successfully\n"
 }
 
 function metisTest {

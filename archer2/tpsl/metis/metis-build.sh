@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
 
-# TODO: extra library -lm required in AOCC Libs:
-
 set -e
 
 # script: full path to this script
+# script_dir: this metis directory
 # script_root: /path/as/far/as/archer2 directory
 
 script="$(readlink -fm "$0")"
-script_root="$(dirname "${script%/*}")"
+script_dir="$(dirname "${script}")"
+script_root="$(dirname "${script%/*/*}")"
 
 source ${script_root}/pkgconfig-lib.sh
 source ${script_root}/versions.sh
 source ${script_root}/command_line.sh
 
-source ${script_root}/tpsl/metis-test.sh
+source ${script_dir}/metis-test.sh
 
 function main {
 
@@ -148,7 +148,7 @@ function metisPackageConfigFiles {
 
 function metisInstallModuleFile {
 
-    local module_template=${script_root}/tpsl/metis/modulefile.tcl
+    local module_template=${script_dir}/modulefile.tcl
 
     # Destination
     local module_dir=$(moduleInstallDirectory)
