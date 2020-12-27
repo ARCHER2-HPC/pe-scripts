@@ -7,7 +7,7 @@
 
 PACKAGE=superlu-dist
 VERSION=6.1.1
-SHA256SUM=4ae956e57aa6c1c3a3a9627f5e464409e9a120e39f3a6e0c75aa021ac37759aa
+SHA256SUM=35d25cff592c724439870444ed45e1d1d15ca2c65f02ccd4b83a6d3c9d220bd1
 
 _pwd(){ CDPATH= cd -- $1 && pwd; }
 _dirname(){ _d=`dirname -- "$1"`;  _pwd $_d; }
@@ -34,14 +34,14 @@ EOF
 { cc -E -I$prefix/include conftest.c >/dev/null 2>&1 && rm conftest.* ; } \
   || fn_error "requires ParMETIS"
 
-test -e superlu_dist_$VERSION.tar.gz \
-  || $WGET http://crd-legacy.lbl.gov/~xiaoye/SuperLU/superlu_dist_$VERSION.tar.gz \
-  || fn_error "could not fetch source"
-echo "$SHA256SUM  superlu_dist_$VERSION.tar.gz" | sha256sum --check \
+test -e v${VERSION}.tar.gz \
+  || wget https://github.com/xiaoyeli/superlu_dist/archive/v${VERSION}.tar.gz \
+  || fn_error "could not download superlu-dist"
+echo "$SHA256SUM  v$VERSION.tar.gz" | sha256sum --check \
   || fn_error "source hash mismatch"
-tar xf superlu_dist_$VERSION.tar.gz \
+tar xf v$VERSION.tar.gz \
   || fn_error "could not untar source"
-cd SuperLU_DIST_$VERSION
+cd superlu_dist-$VERSION
 patch -f -p1 <$top_dir/../patches/superlu-dist-omp.patch \
   || fn_error "could not patch"
 patch -f -p1 <<'EOF'

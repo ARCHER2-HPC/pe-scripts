@@ -7,7 +7,7 @@
 
 PACKAGE=superlu
 VERSION=5.2.1
-SHA256SUM=28fb66d6107ee66248d5cf508c79de03d0621852a0ddeba7301801d3d859f463
+SHA256SUM=77582501dedef295eb74e4dc9433e2816d2d8be211eae307379c13d93c65bc71
 
 _pwd(){ CDPATH= cd -- $1 && pwd; }
 _dirname(){ _d=`dirname -- "$1"`;  _pwd $_d; }
@@ -29,14 +29,14 @@ EOF
 { cc -E -I$prefix/include conftest.c >/dev/null 2>&1 && rm conftest.* ; } \
   || fn_error "requires METIS"
 
-test -e superlu_$VERSION.tar.gz \
-  || $WGET http://crd-legacy.lbl.gov/~xiaoye/SuperLU/superlu_$VERSION.tar.gz \
-  || fn_error "could not fetch source"
-echo "$SHA256SUM  superlu_$VERSION.tar.gz" | sha256sum --check \
+test - v${VERSION}.tar.gz \
+    || $WGET https://github.com/xiaoyeli/superlu/archive/v${VERSION}.tar.gz \
+    || fn_error "could not download superlu"
+echo "$SHA256SUM  v${VERSION}.tar.gz" | sha256sum --check \
   || fn_error "source hash mismatch"
-tar xf superlu_$VERSION.tar.gz \
+tar xf v${VERSION}.tar.gz \
   || fn_error "could not untar source"
-cd SuperLU_$VERSION
+cd superlu-$VERSION
 patch -f -p1 <<'EOF'
 Let SuperLU configure with a BLAS library that's available without
 adding any additional libraries.  User must configure with
