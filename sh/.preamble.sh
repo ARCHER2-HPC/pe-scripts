@@ -5,9 +5,14 @@
 
 # Requires the "PACKAGE" variable be defined before sourcing.
 
+# make_shared:         default is for static libraries
+# make_openmp:         default is for no OpenMP (where there may be a choice)
+# make_using_modules:  use modules for package dependencies (not the prefix)
+
 prefix=${TMPDIR:-/tmp}/$USER/_install
 make_shared=0
 make_openmp=0
+make_using_modules=0
 make_jobs=1
 show_help=false
 
@@ -73,6 +78,8 @@ for arg_option ; do
       make_shared=1 ;;
     -openmp | --openmp)
       make_openmp=1 ;;
+    -modules | --modules)
+      make_using_modules=1 ;;
     -j | --jobs | --job | --jo | --j)
       sh_prev=make_jobs ;;
     -j=* | --jobs=* | --job=* | --jo=* | --j=*)
@@ -305,6 +312,10 @@ else
   printf "Not using OpenMP\n"
   OMPFLAG=""
   FOMPFLAG=""
+fi
+
+if test $make_using_modules -eq 1; then
+    printf "Using modules\n"
 fi
 
 : ${FOMPFLAG="$OMPFLAG"}
