@@ -92,7 +92,7 @@ function parmetisBuild {
 # Remove any existing build directories
 
 function parmetisClean {
-    rm -rf parmetis-${METIS_VERSION}
+    rm -rf parmetis-${PARMETIS_VERSION}
 }
 
 function parmetisBuildMPI {
