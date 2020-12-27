@@ -25,7 +25,7 @@ absence of `-fopenmp` (or the apprpriate option).
 From the directory one level above this, .e.g.,
 
 ```
-$ bash ./archer2/tpsl/metis.sh --prefix=/work/y07/shared
+$ bash ./archer2/libraries/metis/metis-build.sh --prefix=/work/y07/shared
 ```
 
 ## Build
