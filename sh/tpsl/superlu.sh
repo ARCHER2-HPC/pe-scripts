@@ -22,14 +22,8 @@ top_dir=`_dirname \`_dirname "$0"\``
 ##
 cmake --version >/dev/null 2>&1 \
   || fn_error "requires cmake"
-cat >conftest.c <<'EOF'
-#include <metis.h>
-int main(){}
-EOF
-{ cc -E -I$prefix/include conftest.c >/dev/null 2>&1 && rm conftest.* ; } \
-  || fn_error "requires METIS"
 
-test - v${VERSION}.tar.gz \
+test -e v${VERSION}.tar.gz \
     || $WGET https://github.com/xiaoyeli/superlu/archive/v${VERSION}.tar.gz \
     || fn_error "could not download superlu"
 echo "$SHA256SUM  v${VERSION}.tar.gz" | sha256sum --check \
