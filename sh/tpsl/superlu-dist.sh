@@ -71,6 +71,17 @@ without adding any additional libraries.  User must configure with
      find_package(LAPACK)
 
 EOF
+
+if test ${make_using_modules} -eq 1; then
+  # Convince cmake that we can find PARMETIS
+  # We can't leave these empty or exclude them, so set innocuous values... 
+  tpl_parmetis_include_dirs="${PARMETIS_DIR}/include"
+  tpl_parmetis_libraries="-lm"
+else
+  tpl_parmetis_include_dirs="$prefix/include"
+  tpl_parmetis_libraries="parmetis;metis"
+fi
+
 test "$?" = "0" \
   || fn_error "could not patch"
 rm -rf _build && mkdir _build && cd _build
@@ -89,8 +100,9 @@ cmake \
   -DTPL_ENABLE_LAPACKLIB:BOOL=YES \
   -DTPL_LAPACK_LIBRARIES="" \
   -DLAPACK_FOUND:BOOL=YES \
-  -DTPL_PARMETIS_LIBRARIES="parmetis;metis" \
-  -DTPL_PARMETIS_INCLUDE_DIRS="$prefix/include" \
+  -DTPL_ENABLE_PARMETISLIB:BOOL=yes \
+  -DTPL_PARMETIS_LIBRARIES="${tpl_parmetis_libraries}" \
+  -DTPL_PARMETIS_INCLUDE_DIRS="${tpl_parmetis_include_dirs}" \
   -DCMAKE_VERBOSE_MAKEFILE=ON \
   -DMPIEXEC_EXECUTABLE:STRING="srun" \
   -DMPIEXEC_MAX_NUMPROCS:STRING="128" \
@@ -103,6 +115,7 @@ case "$compiler" in
       || fn_error "patching C++11 flags for CCE"
     ;;
 esac
+
 
 make --jobs=$make_jobs \
     || fn_error "build failed"
