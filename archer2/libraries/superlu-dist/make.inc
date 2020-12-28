@@ -1,0 +1,6 @@
+
+CC=cc
+CPP=CC
+FORTRAN=ftn
+INCLUDEDIR=.
+LOADER=cc

@@ -1,0 +1,7 @@
+
+CC=cc
+CFLAGS=-fopenmp
+CPP=CC
+FORTRAN=ftn
+INCLUDEDIR=.
+LOADER=cc
