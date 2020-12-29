@@ -52,7 +52,7 @@ Some details for each package will appear here.
 | metis        | 5.1.0    | none                    | yes     | no   |
 | mumps        | 5.2.1    | metis, parmetis, scotch |         | yes  |
 | parmetis     | 4.0.3    | none                    | yes     | yes  |
-| scotch       | 6.0.9    | none                    | no      | yes  |
+| scotch       | 6.0.10   | none                    | no      | yes  |
 | sundials     | tbc      | none                    | -       | -    |
 | superlu      | 5.2.1    | blas                    | no      | no   |
 | superlu-dist | 6.1.1    | metis, parmetis         | yes     | yes  |
