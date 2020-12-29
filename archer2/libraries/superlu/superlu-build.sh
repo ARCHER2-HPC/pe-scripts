@@ -22,7 +22,7 @@ function main {
 
     superluInstallModuleFile 
     superluInstallationTest
-    printf "Completed installation of superlu\n"
+    printf "Completed installation of superlu successfully\n"
 }
 
 function superluBuildAocc {
@@ -146,11 +146,9 @@ function superluInstallModuleFile {
 
 function superluInstallationTest {
 
-    cd ${script_dir}
     superluTest PrgEnv-cray
     superluTest PrgEnv-gnu
     superluTest PrgEnv-aocc
-    cd -
 
 }
 
@@ -158,15 +156,59 @@ function superluTest {
 
     local prgenv=${1}
     local module_use=$(moduleInstallDirectory)
+    local version=${SUPERLU_VERSION}
 
     printf "Superlu test for %s\n" "${prgenv}"
     module -s restore ${prgenv}
     module use ${module_use}
 
-    module load superlu/${SUPERLU_VERSION}
+    module load superlu/${version}
 
-    cc example.c
-    ./a.out
+    superluClean
+    tar xf v${version}.tar.gz
+
+    # Provide make.inc
+    # Remove "-I$(HEADER)" from compilation rule
+    cp ${script_dir}/make.inc superlu-${version}
+
+    cd superlu-${version}/EXAMPLE
+    sed -i 's/-I\$(HEADER)//' Makefile
+
+    make clean
+    make
+
+    # Run examples
+    ./superlu
+
+    ./dlinsol   < g20.rua
+    ./dlinsolx  < g20.rua
+    ./dlinsolx1 < g20.rua
+    ./dlinsolx2 < g20.rua
+    ./dlinsolx3 < g20.rua
+
+    ./zlinsol   < cg20.cua
+    ./zlinsolx  < cg20.cua
+    ./zlinsolx1 < cg20.cua
+    ./zlinsolx2 < cg20.cua
+    ./zlinsolx3 < cg20.cua
+
+    ./ditersol  -h < g20.rua
+    ./ditersol1 -h < g20.rua
+    ./zitersol  -h < cg20.cua
+    ./zitersol1 -h < cg20.cua
+
+    # Fortran (is similar)
+
+    cd ../FORTRAN
+    sed -i 's/-I\$(HEADER)//' Makefile
+
+    make clean
+    make
+
+    ./df77exm  < ../EXAMPLE/g20.rua
+    ./zf77exm  < ../EXAMPLE/cg20.cua
+
+    cd ../..
 }
 
 main
