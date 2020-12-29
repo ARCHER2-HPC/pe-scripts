@@ -76,11 +76,11 @@ function pcFileWritePackageFile {
     printf "Version: ${pchash[version]}\n" >> ${pcnew}
     printf "Description: ${pchash[description]}\n" >> ${pcnew}
 
-    printf "Requires: " >> ${pcnew}
+    printf "Requires:" >> ${pcnew}
     
     for req in "${reqs[@]}"; do
 	lib=`basename ${req%.pc}`
-	printf "${lib}${omp_requires}" >> ${pcnew}
+	printf " ${lib}${omp_requires}" >> ${pcnew}
     done
 
     printf "\n" >> ${pcnew}
