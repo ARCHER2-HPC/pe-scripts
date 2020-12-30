@@ -16,12 +16,12 @@ function main {
 
     local install_root=${prefix}/libs/scotch/${SCOTCH_VERSION}
 
-    #scotchBuildAocc ${install_root}
+    scotchBuildAocc ${install_root}
     scotchBuildCray ${install_root}
-    #scotchBuildGnu  ${install_root}
+    scotchBuildGnu  ${install_root}
     
     scotchInstallModuleFile
-    scotchInstallationTest
+    scotchInstallationTest ${install_root}
 }
 
 function scotchBuildAocc {
@@ -94,6 +94,10 @@ function scotchBuildMPI {
     # libscotcherrexit.a       libptscotcherrexit.a
     # libscotchmetis.a         libscotchparmetis.a
 
+    # We are not going to include libscotcherrexit here, as this
+    # changes the behaviour of any executable encountering errors
+    # (e.g., the tests) if it appears in  the pkgconfig.
+
     local prefix=${1}
 
     ./sh/tpsl/scotch.sh --jobs=16 --prefix=${prefix}
@@ -101,12 +105,15 @@ function scotchBuildMPI {
     local pe=$(peEnvLower)
     local prefixlib="${prefix}/lib"
 
-    for lib in scotch scotcherr scotcherrexit scotchmetis; do
+    rm ${prefixlib}/libscotcherrexit.a
+    rm ${prefixlib}/libptscotcherrexit.a
+
+    for lib in scotch scotcherr scotchmetis; do
       mv ${prefixlib}/lib${lib}.a ${prefixlib}/lib${lib}_${pe}.a
       ccSharedFromStatic ${prefixlib} ${lib}_${pe}
     done
 
-    for lib in ptscotch ptscotcherr ptscotcherrexit ptscotchparmetis; do
+    for lib in ptscotch ptscotcherr ptscotchparmetis; do
       mv ${prefixlib}/lib${lib}.a ${prefixlib}/lib${lib}_${pe}.a
       ccSharedFromStatic ${prefixlib} ${lib}_${pe}
     done
@@ -122,7 +129,7 @@ function scotchPackageConfigFiles {
 
     # Here we declare the necessary information required to generate
     # pkgconfig files
-    
+
     local prefix=${1}
     local prgEnv=$(peEnvUpper)
 
@@ -131,7 +138,12 @@ function scotchPackageConfigFiles {
     pcmap[version]=${SCOTCH_VERSION}
     pcmap[description]="Scotch library for ${prgEnv}"
     pcmap[has_openmp]=0
-    
+    pcmap[extra_libs]=""
+
+    if [[ "${prgEnv}" == "AOCC" ]]; then
+	pcmap[extra_libs]="-lm"
+    fi
+
     pcPackageConfigFiles ${prefix} pcmap
 }
 
@@ -153,7 +165,6 @@ function scotchInstallModuleFile {
     sed -i "s%TEMPLATE_INSTALL_ROOT%${prefix}%" ${module_file}
     sed -i "s%TEMPLATE_SCOTCH_VERSION%${SCOTCH_VERSION}%" ${module_file}
 
-
     # Ensure this has worked
     module use ${module_dir}
     module load scotch/${SCOTCH_VERSION}
@@ -174,16 +185,48 @@ function scotchTest {
     local prgenv=${1}
     local module_use=$(moduleInstallDirectory)
     local version="${SCOTCH_VERSION}"
-    
+
     printf "Scotch test for %s\n" "${prgenv}"
     module -s restore ${prgenv}
     module use ${module_use}
 
     module load scotch/${version}
 
-    #scotchClean
-    printf "Scotch test here please\n"
+    # Remove any shared objects; prevents mis-linking in Cray, AOCC,
+    # needs to be investigated.
+    if [[ "${prgenv}" == "PrgEnv-cray" ]]; then
+	rm -f ${SCOTCH_DIR}/lib/*.so
+    fi
+    if [[ "${prgenv}" == "PrgEnv-aocc" ]]; then
+	rm -f ${SCOTCH_DIR}/lib/*.so
+    fi
 
+    scotchClean
+    tar xf scotch_${version}.tar.gz
+
+    cd scotch_${version}/src/check
+
+    # Copy our doctored Makefile
+
+    cp ${script_dir}/Makefile.check Makefile
+
+    # Require the scotch metis.h
+    cp ../libscotchmetis/library_metis.h metis.h
+
+    # Sort out test_libmetis.c, which we want to look for SCOTCH_METIS_*,
+    # and not METIS_*
+    sed -i 's/METIS_PartGraphKway/SCOTCH_METIS_PartGraphKway/' test_libmetis.c
+    sed -i 's/METIS_PartGraphRecursive/SCOTCH_METIS_PartGraphRecursive/' test_libmetis.c
+    sed -i 's/METIS_NodeND/SCOTCH_METIS_NodeND/' test_libmetis.c 
+
+    make check
+
+    printf "ptscotch test for %s\n" "${prgenv}"
+    printf "(needs salloc for srun)\n"
+
+    slurmAllocRun "make ptcheck"
+
+    cd ../../..
 }
 
 main
