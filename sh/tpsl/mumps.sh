@@ -43,6 +43,19 @@ echo "$SHA256SUM  MUMPS_$VERSION.tar.gz" | sha256sum --check \
 tar xf MUMPS_$VERSION.tar.gz \
   || fn_error "could not untar source"
 cd MUMPS_$VERSION
+#
+
+if test ${make_using_modules} -eq 1; then
+  conf_imetis=""
+  conf_lmetis=""
+  conf_iscotch=""
+  conf_lscotch=""
+else
+  conf_imetis="-I${prefix}/include"
+  conf_lmetis="-L${prefix}/lib -lparmetis -lmetis"
+  conf_iscotch="-I${prefix}/include"
+  conf_lscotch="-L${prefix}/lib -lesmumps -lptscotch -lscotch -lptscotcherr -lscotcherr"
+fi
 # Cannot build precision libraries in parallel due to shared
 # dependency on ana_ordering_wrappers object, leading to race
 # condition.
@@ -52,10 +65,10 @@ cat >Makefile.inc <<EOF
 LPORDDIR = \$(topdir)/PORD/lib/
 IPORD = -I\$(topdir)/PORD/include/
 LPORD = -L\$(LPORDDIR) -lpord
-IMETIS = -I$prefix/include
-LMETIS = -L$prefix/lib -lparmetis -lmetis
-ISCOTCH = -I$prefix/include
-LSCOTCH = -L$prefix/lib -lesmumps -lptscotch -lscotch -lptscotcherr -lscotcherr
+IMETIS = \${conf_imetis}
+LMETIS = \${conf_lmetis}
+ISCOTCH = \${conf_iscotch}
+LSCOTCH = \${conf_lscotch}
 ORDERINGSC = -Dpord -Dscotch -Dptscotch -Dmetis -Dparmetis
 ORDERINGSF = -Dpord -Dscotch -Dptscotch -Dmetis -Dparmetis
 LORDERINGS = \$(LMETIS) \$(LPORD) \$(LSCOTCH)
