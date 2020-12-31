@@ -70,7 +70,7 @@ MV             = mv
 # - Install the scotch/metis interface libraries, which include
 #   bindings with the prefix "SCOTCH_METIS"
 CPPFLAGS = $CPPFLAGS \\
-  -DSCOTCH_METIS_PREFIX \\
+  -DSCOTCH_METIS_PREFIX -DSCOTCH_METIS_VERSION=5 \\
   -DCOMMON_RANDOM_FIXED_SEED \\
   -DSCOTCH_RENAME \\
   -DCOMMON_PTHREAD \\
