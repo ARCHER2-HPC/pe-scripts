@@ -19,12 +19,31 @@ function pcPackageConfigFiles {
 
 }
 
+function pcRefactorPackageConfigFiles {
+
+    # Run craypkg-gen and then patch up the results
+
+    local prefix=${1}     # pc files will be ${prefix}/*.pc
+    local -n pcmap1=${2}  # pcmap associative array
+
+    module load craypkg-gen
+    craypkg-gen -p ${prefix}
+
+    printf "Generating updated pcfiles\n"
+
+    local files=(${prefix}/lib/pkgconfig/*.pc)
+
+    for file in "${files[@]}"; do
+	# For each pc file, rewrite in the correct form
+	pcFileRefactor "${file}" pcmap1
+    done
+}
 
 function pcFileUpdate {
 
     local prefix=${1}    # Location of *.pc files
     local -n pchm=${2}   # pchashmap
-    
+
     # If there are no .pc files, this is an error. Intentional.
     local files=($(ls ${prefix}/*.pc))
     
@@ -36,18 +55,21 @@ function pcFileUpdate {
     # Remove _mp files from the list
     # Here we don't want an error if there is none
 
-    IFS=" " read -r -a files_mp <<< "`ls ${prefix}/*_mp.pc 2>/dev/null`"
+    # Avoid messing with ls
+    #IFS=" " read -r -a files_mp <<< "`ls ${prefix}/*_mp.pc 2>/dev/null`"
+
+    files_mp=(${prefix}/*_mp.pc)
 
     for file_mp in "${files_mp[@]}"; do
 	for i in "${!files[@]}"; do
-	    if [[ ${files[i]} = ${file_mp} ]]; then
+	    if [ "${files[i]}" = "${file_mp}" ]; then
 		unset 'files[i]'
 	    fi
 	done
     done
-    
+
     printf "Generating top-level package pcfile\n"
-    
+
     pcFileWritePackageFile "${prefix}/${pchm[name]}.pc" pchm files
 }
 
@@ -77,9 +99,42 @@ function pcFileWritePackageFile {
     printf "Description: ${pchash[description]}\n" >> ${pcnew}
 
     printf "Requires:" >> ${pcnew}
-    
+
     for req in "${reqs[@]}"; do
 	lib=`basename ${req%.pc}`
+	printf " ${lib}${omp_requires}" >> ${pcnew}
+    done
+
+    printf "\n" >> ${pcnew}
+}
+
+function pcFileWriteOverallPackageFile {
+
+    # Aggregate pc file for package as a whole
+
+    local pcnew=${1}      # Path to new file
+    local -n pchash=${2}  # pc hash
+
+    local ucName=`echo ${pchash[name]} | tr '[:lower:]' '[:upper:]' `
+
+    local pe_omp_requires=""
+    local omp_requires=""
+
+    if test ${pchash[has_openmp]} -eq 1; then
+      pe_omp_requires="PE_${ucName}_OMP_REQUIRES=\n"
+      omp_requires="\${PE_${ucName}_OMP_REQUIRES}"
+    fi
+
+    printf "# Package ${pchash[name]} pc file\n" > ${pcnew}
+    printf "\n" >> ${pcnew}
+    printf "${pe_omp_requires}\n" >> ${pcnew}
+    printf "Name: ${pchash[name]}\n" >> ${pcnew}
+    printf "Version: ${pchash[version]}\n" >> ${pcnew}
+    printf "Description: ${pchash[description]}\n" >> ${pcnew}
+
+    printf "Requires:" >> ${pcnew}
+
+    for lib in ${pchash[requires]}; do
 	printf " ${lib}${omp_requires}" >> ${pcnew}
     done
 
