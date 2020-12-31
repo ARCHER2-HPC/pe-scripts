@@ -1,0 +1,86 @@
+#
+#  This file is part of MUMPS 5.2.1, released
+#  on Fri Jun 14 14:46:05 UTC 2019
+#
+
+FC=ftn
+FL=ftn
+CC=cc
+OPTF=-O2 $(OMPFLAG)
+OPTL=$(OMPFLAG)
+OPTC= $(OMPFLAG)
+CDEFS=-DAdd_
+
+EXEC2 = srun -n 2
+EXEC3 = srun -n 3
+
+default: d
+
+.PHONY: default all s d c z multi clean
+.SECONDEXPANSION:
+
+all:	c z s d multi
+
+c:	csimpletest csimpletest_save_restore
+z:	zsimpletest zsimpletest_save_restore
+s:	ssimpletest ssimpletest_save_restore
+d:	dsimpletest dsimpletest_save_restore c_example_save_restore c_example
+multi:	multiple_arithmetics_example
+
+
+ssimpletest:  $$@.o
+	$(FL) -o $@ $(OPTL) ssimpletest.o
+
+
+dsimpletest:  $$@.o 
+	$(FL) -o $@ $(OPTL) dsimpletest.o
+
+csimpletest:  $$@.o
+	$(FL) -o $@ $(OPTL) csimpletest.o
+
+zsimpletest:  $$@.o
+	$(FL) -o $@ $(OPTL) zsimpletest.o
+
+c_example:	 $$@.o
+	$(FL) -o $@ $(OPTL) $@.o
+
+
+multiple_arithmetics_example:	$$@.o
+	$(FL) -o $@ $(OPTL) $@.o
+
+ssimpletest_save_restore:   $$@.o
+	$(FL) -o $@ $(OPTL) ssimpletest_save_restore.o
+
+dsimpletest_save_restore:  $$@.o 
+	$(FL) -o $@ $(OPTL) dsimpletest_save_restore.o 
+
+csimpletest_save_restore:  $$@.o
+	$(FL) -o $@ $(OPTL) csimpletest_save_restore.o
+
+zsimpletest_save_restore:  $$@.o
+	$(FL) -o $@ $(OPTL) zsimpletest_save_restore.o
+
+c_example_save_restore:	$$@.o
+	$(FL) -o $@ $(OPTL) $@.o
+
+test:	all
+	$(EXEC2) ./ssimpletest < input_simpletest_real
+	$(EXEC2) ./dsimpletest < input_simpletest_real
+	$(EXEC2) ./csimpletest < input_simpletest_cmplx
+	$(EXEC2) ./zsimpletest < input_simpletest_cmplx
+	$(EXEC3) ./c_example
+	$(EXEC3) ./multiple_arithmetics_example
+	$(EXEC2) ./ssimpletest_save_restore < input_simpletest_real
+	$(EXEC2) ./dsimpletest_save_restore < input_simpletest_real
+	$(EXEC2) ./csimpletest_save_restore < input_simpletest_cmplx
+	$(EXEC2) ./zsimpletest_save_restore < input_simpletest_cmplx
+	$(EXEC3) ./c_example_save_restore
+
+.SUFFIXES: .c .F .o
+.F.o:
+	$(FC) $(OPTF) $(INCS) -I. -c $*.F
+.c.o:
+	$(CC) $(OPTC) $(INCS) $(CDEFS) -I. -c $*.c
+
+clean:
+	$(RM) *.o [sdcz]simpletest c_example multiple_arithmetics_example ssimpletest_save_restore dsimpletest_save_restore csimpletest_save_restore zsimpletest_save_restore c_example_save_restore
