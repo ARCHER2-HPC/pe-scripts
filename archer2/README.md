@@ -47,14 +47,14 @@ Some details for each package will appear here.
 | Package      | Version  | Dependencies            | OpenMP? | MPI? |
 |--------------|----------|-------------------------|---------|------|
 | glm          | 0.9.9.6  | none                    | no      | no   |
-| hypre        | 2.18.0   | none                    | -       | yes  |
+| hypre        | 2.18.0   | none                    | yes     | yes  |
 | matio        | 1.5.18   | none                    | no      | no   |
 | metis        | 5.1.0    | none                    | yes     | no   |
 | mumps        | 5.2.1    | metis, parmetis, scotch | yes     | yes  |
 | parmetis     | 4.0.3    | none                    | yes     | yes  |
 | scotch       | 6.0.10   | none                    | no      | yes  |
 | sundials     | tbc      | none                    | -       | -    |
-| superlu      | 5.2.1    | blas                    | no      | no   |
+| superlu      | 5.2.1    | none                    | no      | no   |
 | superlu-dist | 6.1.1    | metis, parmetis         | yes     | yes  |
 
 
