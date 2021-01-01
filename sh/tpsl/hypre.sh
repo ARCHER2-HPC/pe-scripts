@@ -33,6 +33,15 @@ cd hypre-$VERSION
       patch -f -p1 <$top_dir/../patches/hypre-struct-mv-pragmas.patch ;;
   esac ; } \
     || fn_error "could not patch source"
+#
+if test ${make_openmp} -eq 1; then
+  conf_with_openmp="--with-openmp"
+else
+  conf_with_openmp=""
+  OMPFLAG=""
+  FOMPFLAG=""
+fi
+
 cd src
 ./configure \
   cross_compiling=yes \
@@ -44,7 +53,7 @@ cd src
   CXXFLAGS="$CXXFLAGS $OMPFLAG" \
   LDFLAGS="$OMPFLAG" \
   FCLIBS=" " \
-  --with-openmp \
+  ${conf_with_openmp} \
   --with-MPI-include= \
   --with-MPI-lib-dirs= \
   --with-blas-lib= \
