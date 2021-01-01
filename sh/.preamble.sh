@@ -169,6 +169,7 @@ case "$compiler" in
   intel) OMPFLAG="-qopenmp" ;;
   pgi)   OMPFLAG="-mp" ;;
   crayclang) OMPFLAG="-fopenmp" ; FOMPFLAG="-homp" ;;
+  aocc)  OMPFLAG="-fopenmp" ;;
 esac
 case "$compiler" in
   cray) C99FLAG="-hstd=c99" ;;
