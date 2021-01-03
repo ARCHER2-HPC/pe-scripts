@@ -65,10 +65,10 @@ cat >Makefile.inc <<EOF
 LPORDDIR = \$(topdir)/PORD/lib/
 IPORD = -I\$(topdir)/PORD/include/
 LPORD = -L\$(LPORDDIR) -lpord
-IMETIS = \${conf_imetis}
-LMETIS = \${conf_lmetis}
-ISCOTCH = \${conf_iscotch}
-LSCOTCH = \${conf_lscotch}
+IMETIS = ${conf_imetis}
+LMETIS = ${conf_lmetis}
+ISCOTCH = ${conf_iscotch}
+LSCOTCH = ${conf_lscotch}
 ORDERINGSC = -Dpord -Dscotch -Dptscotch -Dmetis -Dparmetis
 ORDERINGSF = -Dpord -Dscotch -Dptscotch -Dmetis -Dparmetis
 LORDERINGS = \$(LMETIS) \$(LPORD) \$(LSCOTCH)
