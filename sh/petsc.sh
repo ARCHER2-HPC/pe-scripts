@@ -60,8 +60,9 @@ fn_check_includes SuperLU slu_ddefs.h
 fn_check_includes SuperLU_DIST superlu_dist_config.h
 fn_check_includes PT-Scotch ptscotch.h
 fn_check_includes MUMPS mumps_c_types.h
-fn_check_includes HYPRE HYPRE.h
-fn_check_includes SUNDIALS sundials/sundials_types.h
+# Note HYPRE and Sundials are not actually used at present...
+#fn_check_includes HYPRE HYPRE.h
+#fn_check_includes SUNDIALS sundials/sundials_types.h
 fn_check_includes HDF5 hdf5.h
 
 test -e petsc-lite-$VERSION.tar.gz \
@@ -123,6 +124,24 @@ case "$compiler" in
     MUMPS_EXTRA_LIBS="-lmpifort_aocc -lpgmath -lflang -lflangrti -lflangmain";;
 esac
 
+if test ${make_using_modules} -eq 1; then
+  conf_with_metis_dir=""
+  conf_with_ptscotch_include=""
+  conf_with_ptscotch_lib=""
+  conf_with_mumps_include=""
+  conf_with_mumps_lib="${MUMPS_EXTRA_LIBS}"
+  conf_with_superlu_dir=""
+  conf_with_superlu_dist_dir=""
+else
+  conf_with_metis_dir="--with-metis-dir=${prefix}"
+  conf_with_ptscotch_include="${prefix}/include"
+  conf_with_ptscotch_lib="-L${prefix}/lib -lptscotch -lscotch -lptscotcherr -lscotcherr"
+  conf_with_mumps_include="${prefix}/include"
+  conf_with_mumps_lib="-L${prefix}/lib -lcmumps -ldmumps -lesmumps -lsmumps -lzmumps -lmumps_common -lptesmumps -lesmumps -lpord ${MUMPS_EXTRA_LIBS}"
+  conf_with_superlu_dir="--with-superlu-dir=${prefix}"
+  conf_with_superlu_dist_dir="--with-superlu_dist-dir=${prefix}"
+fi
+
 cat >configure-petsc.sh <<EOF
 #!/bin/sh
 exec ./configure \\
@@ -174,19 +193,19 @@ exec ./configure \\
   --with-mpiexec=srun \\
   --with-blas-lapack=1 \\
   --with-superlu=1 \\
-  --with-superlu-dir=$prefix \\
+  ${conf_with_superlu_dir} \\
   --with-superlu_dist=1 \\
-  --with-superlu_dist-dir=$prefix \\
+  ${conf_with_superlu_dist_dir} \\
   --with-parmetis=1 \\
   --with-metis=1 \\
-  --with-metis-dir=$prefix \\
+  ${conf_with_metis_dir} \\
   --with-scalapack=1 \\
   --with-ptscotch=1 \\
-  --with-ptscotch-include=$prefix/include \\
-  --with-ptscotch-lib="-L$prefix/lib -lptscotch -lscotch -lptscotcherr -lscotcherr" \\
+  --with-ptscotch-include="${conf_with_ptscotch_include}" \\
+  --with-ptscotch-lib="${conf_with_ptscotch_lib}" \\
   --with-mumps=1 \\
-  --with-mumps-include=$prefix/include \\
-  --with-mumps-lib="-L$prefix/lib -lcmumps -ldmumps -lesmumps -lsmumps -lzmumps -lmumps_common -lptesmumps -lesmumps -lpord ${MUMPS_EXTRA_LIBS}" \\
+  --with-mumps-include="${conf_with_mumps_include}" \\
+  --with-mumps-lib="${conf_with_mumps_lib}" \\
   --with-hdf5=1 \\
   --CFLAGS="$CFLAGS $OMPFLAG" \\
   --CPPFLAGS="-I$prefix/include $CPPFLAGS" \\
