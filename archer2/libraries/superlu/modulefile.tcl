@@ -38,8 +38,6 @@ if { ! [ info exists env(PE_ENV) ] } {
   set prod_level ${superlu_version}
   set prod_root ${shared_root}/libs/$lcName/$prod_level
 
-  prepend-path PATH $prod_root/bin
-
   # Cray integration via pkgconfig
   # Compiler environment and currently loaded compiler version
 
@@ -93,20 +91,8 @@ if { ! [ info exists env(PE_ENV) ] } {
     set product_curpath $pe_product_dir/$compiler/$gen_compiler
 
     # Potential change while module is loaded not handled
+    # PRODUCT_DIR
     setenv ${ucName}_DIR $product_curpath
-
-    # load or remove paths
-    if { ! [ module-info mode remove ] } {
-      prepend-path PATH $product_curpath/lib
-    } else {
-      set oldpath $env(PATH)
-      foreach mod [ split $oldpath ':' ] {
-        if { [ expr [ lsearch [ split $mod '/' ] $lcName ] >= 0 ] } {
-	  # This is mode remove so prepend is remove
-          prepend-path PATH $mod
-        } 
-      }
-    }
   }
 
 }
