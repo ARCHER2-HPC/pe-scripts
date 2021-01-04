@@ -22,6 +22,8 @@ function main {
     
     superludistInstallModuleFile
     superludistInstallationTest
+
+    printf "Test and installation of SuperLU_DIST complete\n"
 }
 
 function superludistBuildAocc {
@@ -130,7 +132,7 @@ function superludistPackageConfigFiles {
     # pkgconfig files
     
     local prefix=${1}
-    local prgEnv=$(peEnvUpper)
+    local prgEnv=$(peEnvLower)
 
     # SuperLU_DIST produces its own superlu_dist.pc file
     # which we need to remove before installing our own.
@@ -141,11 +143,13 @@ function superludistPackageConfigFiles {
     declare -A pcmap
     pcmap[name]="superlu_dist"
     pcmap[version]=${SUPERLUDIST_VERSION}
-    pcmap[description]="SuperLU_DIST library for ${prgEnv}"
+    pcmap[description]="SuperLU_DIST library for ${prgEnv} compiler"
     pcmap[has_openmp]=1
     pcmap[extra_libs]="-lstdc++"
-    
-    pcPackageConfigFiles ${prefix} pcmap
+    pcmap[requires]="superlu_dist_${prgEnv}_mpi"
+
+    pcRefactorPackageConfigFiles ${prefix} pcmap
+    pcFileWriteOverallPackageFile "${prefix}/lib/pkgconfig/superlu_dist.pc" pcmap
 }
 
 function superludistInstallModuleFile {
@@ -154,6 +158,7 @@ function superludistInstallModuleFile {
 
     # Destination
     local module_dir=$(moduleInstallDirectory)
+    local time_stamp=$(date)
 
     if [[ ! -d ${module_dir}/superlu-dist ]]; then
 	mkdir ${module_dir}/superlu-dist
@@ -166,7 +171,7 @@ function superludistInstallModuleFile {
     sed -i "s%TEMPLATE_INSTALL_ROOT%${prefix}%" ${module_file}
     sed -i "s%TEMPLATE_SUPERLUDIST_VERSION%${SUPERLUDIST_VERSION}%" ${module_file}
     sed -i "s%TEMPLATE_PARMETIS_VERSION%${PARMETIS_VERSION}%" ${module_file}
-
+    sed -i "s%TEMPLATE_TIMESTAMP%${time_stamp}%" ${module_file}
 
     # Ensure this has worked
     module use ${module_dir}
@@ -188,13 +193,19 @@ function superludistTest {
     local prgenv=${1}
     local module_use=$(moduleInstallDirectory)
     local version="${SUPERLUDIST_VERSION}"
-    
+
     printf "SuperLU test for %s\n" "${prgenv}"
     module -s restore ${prgenv}
     module use ${module_use}
 
     module load superlu-dist/${version}
 
+    # Remove any shared objects from the package config stage
+    rm  ${SUPERLU_DIST_DIR}/lib/*.so
+
+    # Run standard examples with the distribution with a doctored
+    # Makefile
+    
     superludistClean
     tar xf v${version}.tar.gz
 
@@ -213,8 +224,13 @@ function superludistTest {
     cp ${script_dir}/make_omp.inc ../make.inc
     make
 
-    # Assume ok. We won't run again.
-    
+    export OMP_NUM_THREADS=2
+
+    slurmAllocRun "srun -n 4 pddrive -r 2 -c 2 g20.rua"
+    slurmAllocRun "srun -n 10 pddrive4 g20.rua"
+    slurmAllocRun "srun -n 4 pzdrive -r 2 -c 2 cg20.cua"
+    slurmAllocRun "srun -n 10 pzdrive4 cg20.cua"    
+
     cd -
 }
 

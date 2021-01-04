@@ -17,9 +17,10 @@ source ${module_root}/archer-pkgconfig-tcl.lib
 conflict superlu-dist
 
 proc ModulesHelp { } {
-  puts stderr "superlu-dist"
+  puts stderr "SuperLU_DIST version $::superlu_dist_version"
+  puts stderr "See https://docs.archer2.ac.uk/software-libraries/superlu/"
   puts stderr "Installed by: Kevin Stratford, EPCC"
-  puts stderr "Date: December 2020\n"
+  puts stderr "Date: TEMPLATE_TIMESTAMP\n"
 }
 
 set _module_name  [module-info name]
@@ -98,23 +99,7 @@ if { ! [ info exists env(PE_ENV) ] } {
     set product_curpath $pe_product_dir/$compiler/$gen_compiler
 
     # Potential change while module is loaded not handled
-    prepend-path LD_LIBRARY_PATH $product_curpath/lib
-
-    # Also non-volatile
     setenv ${ucName}_DIR ${product_curpath}  
-
-    # load or remove paths for CSE_LD_LIBRARY_PATH
-    if { ! [ module-info mode remove ] } {
-      prepend-path CSE_LD_LIBRARY_PATH $product_curpath/lib
-    } else {
-      set oldpath $env(CSE_LD_LIBRARY_PATH)
-      foreach mod [ split $oldpath ':' ] {
-        if { [ expr [ lsearch [ split $mod '/' ] $lcName ] >= 0 ] } {
-	  # This is mode remove so prepend is remove
-          prepend-path CSE_LD_LIBRARY_PATH $mod
-        } 
-      }
-    }
   }
 
 }
