@@ -16,9 +16,9 @@ function main {
 
     local install_root=${prefix}/libs/parmetis/${PARMETIS_VERSION}
 
-    parmetisBuildCray ${install_root}
-    parmetisBuildGnu  ${install_root}
-    parmetisBuildAocc ${install_root}
+    #parmetisBuildCray ${install_root}
+    #parmetisBuildGnu  ${install_root}
+    #parmetisBuildAocc ${install_root}
 
     parmetisInstallModuleFile
     parmetisInstallationTest
@@ -130,15 +130,18 @@ function parmetisPackageConfigFiles {
     # pkgconfig files
     
     local prefix=${1}
-    local prgEnv=$(peEnvUpper)
+    local prgEnv=$(peEnvLower)
     
     declare -A pcmap
     pcmap[name]="parmetis"
     pcmap[version]=${PARMETIS_VERSION}
-    pcmap[description]="parmetis library for ${prgEnv}"
+    pcmap[description]="parmetis library for ${prgEnv} compiler"
     pcmap[has_openmp]=1
 
-    pcPackageConfigFiles ${prefix} pcmap
+    pcmap[requires]="parmetis_${prgEnv}_mpi"
+
+    pcRefactorPackageConfigFiles ${prefix} pcmap
+    pcFileWriteOverallPackageFile "${prefix}/lib/pkgconfig/parmetis.pc" pcmap
 }
 
 function parmetisInstallModuleFile {
@@ -147,7 +150,8 @@ function parmetisInstallModuleFile {
 
     # Destination
     local module_dir=$(moduleInstallDirectory)
-
+    local time_stamp=$(date)
+    
     if [[ ! -d ${module_dir}/parmetis ]]; then
 	mkdir ${module_dir}/parmetis
     fi
@@ -159,7 +163,8 @@ function parmetisInstallModuleFile {
     sed -i "s%TEMPLATE_INSTALL_ROOT%${prefix}%" ${module_file}
     sed -i "s%TEMPLATE_PARMETIS_VERSION%${PARMETIS_VERSION}%" ${module_file}
     sed -i "s%TEMPLATE_METIS_VERSION%${METIS_VERSION}%" ${module_file}
-
+    sed -i "s%TEMPLATE_TIMESTAMP%${time_stamp}%" ${module_file}
+    
     # Ensure this has worked
     module use ${module_dir}
     module load parmetis/${PARMETIS_VERSION}
@@ -169,12 +174,11 @@ function parmetisInstallModuleFile {
 
 function parmetisInstallationTest {
 
-    cd ${script_dir}
     parmetisTest PrgEnv-cray
     parmetisTest PrgEnv-gnu
     parmetisTest PrgEnv-aocc
-    cd -
 
+    printf "Completed parmetis installation successfully\n"
 }
 
 function parmetisTest {
@@ -188,9 +192,17 @@ function parmetisTest {
 
     module load parmetis/${PARMETIS_VERSION}
 
+    # Remove shared objects from package config stage
+    rm -f ${PARMETIS_DIR}/lib/*.so
+    
+    cd parmetis-${PARMETIS_VERSION}
+
+    cp ${script_dir}/parmetis-install.c parmetis-install.c
     cc parmetis-install.c
 
     slurmAllocRun "srun -n 3 ./a.out"
+
+    cd -
 }
 
 main
