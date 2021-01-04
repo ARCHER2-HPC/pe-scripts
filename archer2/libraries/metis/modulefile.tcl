@@ -16,9 +16,10 @@ source ${module_root}/archer-pkgconfig-tcl.lib
 conflict metis
 
 proc ModulesHelp { } {
-  puts stderr "Metis version ${metis_version}"
+  puts stderr "Metis version $::metis_version"
+  puts stderr "See https://docs.archer2.ac.uk/software-libraries/metis/"
   puts stderr "Installed by: Kevin Stratford, EPCC"
-  puts stderr "Date: January 2021\n"
+  puts stderr "Date: TEMPLATE_TIMESTAMP\n"
 }
 
 set _module_name  [module-info name]

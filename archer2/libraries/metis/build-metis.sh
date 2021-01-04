@@ -153,6 +153,7 @@ function metisInstallModuleFile {
 
     # Destination
     local module_dir=$(moduleInstallDirectory)
+    local time_stamp=$(date)
 
     if [[ ! -d ${module_dir}/metis ]]; then
 	mkdir ${module_dir}/metis
@@ -164,6 +165,7 @@ function metisInstallModuleFile {
     cp ${module_template} ${module_file}
     sed -i "s%TEMPLATE_INSTALL_ROOT%${prefix}%" ${module_file}
     sed -i "s%TEMPLATE_METIS_VERSION%${METIS_VERSION}%" ${module_file}
+    sed -i "s%TEMPLATE_TIMESTAMP%${time_stamp}%" ${module_file}
 
     module use ${module_dir}
     module load metis/${METIS_VERSION}
