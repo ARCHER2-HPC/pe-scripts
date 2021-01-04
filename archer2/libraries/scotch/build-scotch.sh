@@ -22,6 +22,8 @@ function main {
     
     scotchInstallModuleFile
     scotchInstallationTest ${install_root}
+
+    printf "Scotch nstallation test completed successfully\n"
 }
 
 function scotchBuildAocc {
@@ -94,10 +96,6 @@ function scotchBuildMPI {
     # libscotcherrexit.a       libptscotcherrexit.a
     # libscotchmetis.a         libscotchparmetis.a
 
-    # We are not going to include libscotcherrexit here, as this
-    # changes the behaviour of any executable encountering errors
-    # (e.g., the tests) if it appears in  the pkgconfig.
-
     local prefix=${1}
 
     ./sh/tpsl/scotch.sh --jobs=16 --prefix=${prefix}
@@ -105,24 +103,19 @@ function scotchBuildMPI {
     local pe=$(peEnvLower)
     local prefixlib="${prefix}/lib"
 
-    rm ${prefixlib}/libscotcherrexit.a
-    rm ${prefixlib}/libptscotcherrexit.a
+    # Postfix ${pe}_mpi
+    #rm ${prefixlib}/libscotcherrexit.a
+    #rm ${prefixlib}/libptscotcherrexit.a
 
-    for lib in scotch scotcherr scotchmetis; do
+    for lib in scotch scotcherr scotchmetis esmumps; do
       mv ${prefixlib}/lib${lib}.a ${prefixlib}/lib${lib}_${pe}.a
       ccSharedFromStatic ${prefixlib} ${lib}_${pe}
     done
 
-    for lib in ptscotch ptscotcherr ptscotchparmetis; do
-      mv ${prefixlib}/lib${lib}.a ${prefixlib}/lib${lib}_${pe}.a
-      ccSharedFromStatic ${prefixlib} ${lib}_${pe}
+    for lib in ptscotch ptscotcherr ptscotchparmetis ptesmumps; do
+      mv ${prefixlib}/lib${lib}.a ${prefixlib}/lib${lib}_${pe}_mpi.a
+      ccSharedFromStatic ${prefixlib} ${lib}_${pe}_mpi
     done
-
-    for lib in esmumps ptesmumps; do
-      mv ${prefixlib}/lib${lib}.a ${prefixlib}/lib${lib}_${pe}.a
-      ccSharedFromStatic ${prefixlib} ${lib}_${pe}
-    done
-
 }
 
 function scotchPackageConfigFiles {
@@ -131,20 +124,30 @@ function scotchPackageConfigFiles {
     # pkgconfig files
 
     local prefix=${1}
-    local prgEnv=$(peEnvUpper)
-
+    local prgEnv=$(peEnvLower)
+    local ext="${prgEnv}"
+    local extmpi="${prgEnv}_mpi"
+    
     declare -A pcmap
     pcmap[name]="scotch"
     pcmap[version]=${SCOTCH_VERSION}
-    pcmap[description]="Scotch library for ${prgEnv}"
+    pcmap[description]="Scotch library for ${prgEnv} compiler"
     pcmap[has_openmp]=0
     pcmap[extra_libs]=""
 
-    if [[ "${prgEnv}" == "AOCC" ]]; then
+    if [[ "${prgEnv}" == "aocc" ]]; then
 	pcmap[extra_libs]="-lm"
     fi
 
-    pcPackageConfigFiles ${prefix} pcmap
+    # We are not going to include libscotcherrexit here, as this
+    # changes the behaviour of any executable encountering errors
+    # (e.g., the tests) if it appears in the pkgconfig.
+    # Order is important
+
+    pcmap[requires]="esmumps_${ext} ptesmumps_${extmpi} ptscotchparmetis_${extmpi} ptscotch_${extmpi} ptscotcherr_${extmpi} scotchmetis_${ext} scotch_${ext} scotcherr_${ext}"
+
+    pcRefactorPackageConfigFiles ${prefix} pcmap
+    pcFileWriteOverallPackageFile "${prefix}/lib/pkgconfig/scotch.pc" pcmap
 }
 
 function scotchInstallModuleFile {
@@ -153,6 +156,7 @@ function scotchInstallModuleFile {
 
     # Destination
     local module_dir=$(moduleInstallDirectory)
+    local time_stamp=$(date)
 
     if [[ ! -d ${module_dir}/scotch ]]; then
 	mkdir ${module_dir}/scotch
@@ -164,6 +168,7 @@ function scotchInstallModuleFile {
     cp ${module_template} ${module_file}
     sed -i "s%TEMPLATE_INSTALL_ROOT%${prefix}%" ${module_file}
     sed -i "s%TEMPLATE_SCOTCH_VERSION%${SCOTCH_VERSION}%" ${module_file}
+    sed -i "s%TEMPLATE_TIMESTAMP%${time_stamp}%" ${module_file}
 
     # Ensure this has worked
     module use ${module_dir}
@@ -192,18 +197,13 @@ function scotchTest {
 
     module load scotch/${version}
 
-    # Remove any shared objects; prevents mis-linking in Cray, AOCC,
-    # needs to be investigated.
-    if [[ "${prgenv}" == "PrgEnv-cray" ]]; then
-	rm -f ${SCOTCH_DIR}/lib/*.so
-    fi
-    if [[ "${prgenv}" == "PrgEnv-aocc" ]]; then
-	rm -f ${SCOTCH_DIR}/lib/*.so
-    fi
+    # Remove shared objects from package config stage
+    rm -f ${SCOTCH_DIR}/lib/*.so
 
     scotchClean
     tar xf scotch_${version}.tar.gz
 
+    # More-or-less the standard scotch "make check" and "ptcheck"
     cd scotch_${version}/src/check
 
     # Copy our doctored Makefile
@@ -226,7 +226,7 @@ function scotchTest {
 
     slurmAllocRun "make ptcheck"
 
-    cd ../../..
+    cd -
 }
 
 main
