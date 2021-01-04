@@ -86,6 +86,9 @@ int main(int argc, char ** argv) {
   
     MPI_Reduce(&ierr_local, &ierr, 1, MPI_INT, MPI_SUM, 0, comm);
   }
+
+  if (rank == 0) printf("Parmetis executable returns %d\n", ierr);
+
   MPI_Finalize();
 
   return ierr;
