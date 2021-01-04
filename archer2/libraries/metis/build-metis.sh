@@ -136,7 +136,7 @@ function metisPackageConfigFiles {
     pcmap[has_openmp]=1
     pcmap[extra_libs]=""
 
-    if [[ "${prgEnv}" == "AOCC" ]]; then
+    if [[ "${prgEnv}" == "aocc" ]]; then
 	# AOCC requires -lm to ensure resolve math.h stuff
 	pcmap[extra_libs]="-lm"
     fi
