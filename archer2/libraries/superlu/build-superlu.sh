@@ -22,7 +22,7 @@ function main {
 
     superluInstallModuleFile 
     superluInstallationTest
-    printf "Completed installation of superlu successfully\n"
+    printf "Completed installation (and test) of superlu successfully\n"
 }
 
 function superluBuildAocc {
@@ -102,21 +102,24 @@ function superluPackageConfigFiles {
     # pkgconfig files
     
     local prefix=${1}
-    local prgEnv=$(peEnvUpper)
+    local prgEnv=$(peEnvLower)
     
     declare -A pcmap
     pcmap[name]="superlu"
     pcmap[version]=${SUPERLU_VERSION}
-    pcmap[description]="superlu library for ${prgEnv}"
+    pcmap[description]="superlu library for ${prgEnv} compiler"
     pcmap[has_openmp]=0
     pcmap[extra_libs]=""
 
-    if [[ "${prgEnv}" == "AOCC" ]]; then
+    if [[ "${prgEnv}" == "aocc" ]]; then
 	# Requires explicit -lm
 	pcmap[extra_libs]="-lm"
     fi
-    
-    pcPackageConfigFiles ${prefix} pcmap
+
+    pcmap[requires]="superlu_${prgEnv}"
+
+    pcRefactorPackageConfigFiles ${prefix} pcmap
+    pcFileWriteOverallPackageFile "${prefix}/lib/pkgconfig/superlu.pc" pcmap
 }
 
 function superluInstallModuleFile {
@@ -125,6 +128,7 @@ function superluInstallModuleFile {
 
     # Destination
     local module_dir=$(moduleInstallDirectory)
+    local time_stamp=$(date)
 
     if [[ ! -d ${module_dir}/superlu ]]; then
 	mkdir ${module_dir}/superlu
@@ -136,6 +140,7 @@ function superluInstallModuleFile {
     cp ${module_template} ${module_file}
     sed -i "s%TEMPLATE_INSTALL_ROOT%${prefix}%" ${module_file}
     sed -i "s%TEMPLATE_SUPERLU_VERSION%${SUPERLU_VERSION}%" ${module_file}
+    sed -i "s%TEMPLATE_TIMESTAMP%${time_stamp}%" ${module_file}
 
     # Ensure this has worked
     module use ${module_dir}
@@ -149,7 +154,6 @@ function superluInstallationTest {
     superluTest PrgEnv-cray
     superluTest PrgEnv-gnu
     superluTest PrgEnv-aocc
-
 }
 
 function superluTest {
@@ -164,6 +168,10 @@ function superluTest {
 
     module load superlu/${version}
 
+    # Remove shared objects from package config stage
+    rm ${SUPERLU_DIR}/lib/*.so
+
+    # Run standard examples from EXAMPLE and FORTRAN subdirectories
     superluClean
     tar xf v${version}.tar.gz
 
@@ -197,9 +205,12 @@ function superluTest {
     ./zitersol  -h < cg20.cua
     ./zitersol1 -h < cg20.cua
 
+    cd -
+    
     # Fortran (is similar)
 
-    cd ../FORTRAN
+    cd superlu-${version}/FORTRAN
+    
     sed -i 's/-I\$(HEADER)//' Makefile
 
     make clean
@@ -208,7 +219,7 @@ function superluTest {
     ./df77exm  < ../EXAMPLE/g20.rua
     ./zf77exm  < ../EXAMPLE/cg20.cua
 
-    cd ../..
+    cd -
 }
 
 main
