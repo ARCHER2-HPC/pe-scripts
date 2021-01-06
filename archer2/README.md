@@ -57,20 +57,20 @@ Some details for each package will appear here.
 | superlu      | 5.2.1    | none                    | no      | no   |
 | superlu-dist | 6.1.1    | metis, parmetis         | yes     | yes  |
 
-## Library modules (other via pe-scripts)
+## Library modules (others via pe-scripts)
 
 | Package      | Version  | Dependencies            | OpenMP? | MPI? |
 |--------------|----------|-------------------------|---------|------|
-| adios        | tbc      | -                       | -       | -    |
+| adios        | 1.13.1   | cray-hdf5-parallel      | no      | yes  |
 | boost        | tbc      | none                    | -       | -    |
 | petsc        | 3.13.3   | superlu, superlu-dist,  |         |      |
 |              |          | metis, parmetis, scotch,|         |      |
-|              |          | mumps, hypre            |         |      |
+|              |          | mumps                   | yes     | yes  |
 | slepc        |          | petsc                   |         |      |
 | trilinos     |          | kitchen sink            |         |      |
 
 
-## Other
+## Library modules (other CSE)
 
 Pending: Arpack-NG
 
