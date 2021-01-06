@@ -1,0 +1,57 @@
+# Adios 1.13
+# A small selection of standard tests built against the installed
+# version (PATH should contain "adios_config").
+
+# These are serial tests located in top_level/tests/test_src
+
+# Note: C include files appear as e.g., "public/adios.h" in the 
+# distributed source files, so we need to get rid of the "public/".
+
+# Note: Some of the tests (e.g., hashtest.c) depend on private includes
+# and so cannot be compiled against the installed version.
+
+FC=ftn
+CC=cc
+
+ADIOS_INC := $(shell adios_config -s -c)
+ADIOS_CLIB := $(shell adios_config -s -l)
+
+ADIOS_CRLIB := $(shell adios_config -srl)
+ADIOS_FRLIB := $(shell adios_config -sfrl)
+
+TARGETS= array_attribute group_free_test points_1DtoND query_minmax \
+         read_points_2d selection_api
+
+all:	$(TARGETS)
+
+array_attribute:
+	sed -i 's%public/%%' $@.c
+	$(CC) $(ADIOS_INC) -o $@ array_attribute.c $(ADIOS_CLIB)
+	./$@
+
+group_free_test:
+	sed -i 's%public/%%' $@.c
+	$(CC) $(ADIOS_INC) -o $@ group_free_test.c $(ADIOS_CLIB) 
+	./$@
+
+points_1DtoND:
+	sed -i 's%public/%%' $@.c
+	$(CC) $(ADIOS_INC) -o $@ points_1DtoND.c $(ADIOS_CRLIB)
+	./$@
+
+query_minmax:
+	sed -i 's%public/%%' $@.c
+	$(CC) $(ADIOS_INC) -o $@ query_minmax.c $(ADIOS_CLIB)
+	./$@
+
+read_points_2d:
+	sed -i 's%public/%%' $@.c
+	$(CC) $(ADIOS_INC) -o $@ read_points_2d.c $(ADIOS_CLIB)
+	./$@
+
+selection_api:
+	$(FC) $(ADIOS_INC) -o $@ selection_api.F90 $(ADIOS_FRLIB)
+	./$@
+
+clean:
+	$(RM) *.o $(TARGETS)
