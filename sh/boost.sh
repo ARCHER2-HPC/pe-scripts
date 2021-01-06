@@ -165,7 +165,7 @@ set -x
   || fn_error "bootstrap failed"
 
 b2="./b2 --user-config=user-config.jam \
-  toolset=$toolset --jobs=$make_jobs \
+  toolset=$toolset -j $make_jobs \
   threading=multi debug-symbols=off \
   `case $compiler in \
      cray) echo 'optimization=default inlining=on vectorize=default' ;; \
