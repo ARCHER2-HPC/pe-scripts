@@ -4,8 +4,11 @@
 
 From the top level, e.g.,
 ```
+$ salloc --nodes=1 --exclusive --time=00:20:00 --qos=short --partition=standard
 $ bash ./archer2/libraries/superlu-dist/build-superlu-dist.sh --prefix=/work/y07/shared
 ```
+This will build both an OpenMP version and a non-OpenMP version for
+each programming environment.
 
 ## Module file
 
@@ -15,7 +18,6 @@ declares a dependency via `PE_PARMETIS`.
 The module prepends, amongst other path variables:
 ```
 SUPERLU_DIST_DIR      base of the installation for this PE/COMPILER
-CSE_LD_LIBRARY_PATH   ${SUPERLU_DIST_DIR}/lib
 ```
 
 Note that the module file is `superlu-dist` (not `superlu_dist`). However,
