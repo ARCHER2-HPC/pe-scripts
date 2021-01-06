@@ -16,12 +16,14 @@ function main {
 
     local install_root=${prefix}/libs/hypre/${HYPRE_VERSION}
 
-    #hypreBuildCray ${install_root}
-    #hypreBuildGnu  ${install_root}
-    #hypreBuildAocc ${install_root}
+    hypreBuildCray ${install_root}
+    hypreBuildGnu  ${install_root}
+    hypreBuildAocc ${install_root}
 
-    #hypreInstallModuleFile
+    hypreInstallModuleFile
     hypreInstallationTest
+
+    printf "HYPRE installed successfully\n"
 }
 
 function hypreBuildAocc {
@@ -168,6 +170,7 @@ function hypreInstallationTest {
     hypreTest PrgEnv-cray
     hypreTest PrgEnv-gnu
     hypreTest PrgEnv-aocc
+
 }
 
 function hypreTest {
@@ -181,8 +184,25 @@ function hypreTest {
 
     module load hypre/${HYPRE_VERSION}
 
-    cd hypre-${HYPRE_VERSION}/src/test
+    # Remove shared objects from the package config stage
+    rm -f ${HYPRE_DIR}/lib/*.so
 
+    # First compile examples
+    # Then move to test directory to run the driver
+    cd hypre-${HYPRE_VERSION}/src/examples
+
+    cp ${script_dir}/Makefile.examples Makefile
+    make clean
+    make
+    cd -
+
+    cd hypre-${HYPRE_VERSION}/src/test
+    sed -i 's/type -p mpirun/type -p srun/' runtest.sh
+    sed -i 's/Prefix -np/Prefix -n/' runtest.sh
+
+    slurmAllocRun "./runtest.sh -t TEST_examples/*sh"
+
+    # Compile OpenMP tests in test directory; but not run
     cp ${script_dir}/Makefile.test Makefile
     make clean
     make all
@@ -190,7 +210,7 @@ function hypreTest {
     make clean
     make all COMPFLAG=-fopenmp FOMPFLAG=-fopenmp
     
-    cd ../../..
+    cd -
 }
 
 main
