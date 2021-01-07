@@ -30,6 +30,13 @@ echo "$SHA256SUM  matio-$VERSION.tar.gz" | sha256sum --check \
 tar xf matio-$VERSION.tar.gz \
   || fn_error "could not untar source"
 cd matio-$VERSION
+
+if test ${make_shared} -eq 1; then
+  conf_shared="--enable-shared"
+else
+  conf_shared="--disable-shared"
+fi
+
 ./configure \
   cross_compiling=yes \
   ac_cv_va_copy=C99 \
@@ -38,7 +45,7 @@ cd matio-$VERSION
   CFLAGS="$CFLAGS" \
   --enable-extended-sparse \
   --enable-static \
-  --enable-shared \
+  ${conf_shared} \
   || fn_error "configuration failed"
 make --jobs=$make_jobs \
   || fn_error "build failed"
