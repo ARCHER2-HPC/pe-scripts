@@ -73,7 +73,7 @@ exec ./configure \\
   FCLIBS=" " \
   --prefix=$prefix \\
   --with-pic --disable-shared \\
-  --with-zlib
+  --with-zlib --with-mpi
 EOF
 
 test "$?" = "0" \
