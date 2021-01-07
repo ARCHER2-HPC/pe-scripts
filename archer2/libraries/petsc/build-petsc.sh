@@ -18,7 +18,7 @@ function main {
 
     petscBuildCray ${install_root}
     petscBuildGnu  ${install_root}
-    petscBuildAocc ${install_root}
+    #petscBuildAocc ${install_root}
 
     petscInstallModuleFile
     petscInstallationTest
