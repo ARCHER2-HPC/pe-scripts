@@ -150,6 +150,11 @@ function mumpsPackageConfigFiles {
     pcmap[description]="mumps library for ${prgEnv}"
     pcmap[has_openmp]=1
 
+    # While AOCC OpenMP is unreliable
+    if [[ "${prgEnv}" == "aocc" ]]; then
+	pcmap[has_openmp]=0
+    fi
+    
     pcmap[requires]="smumps_${ext} dmumps_${ext} cmumps_${ext} zmumps_${ext} mumps_common_${ext} pord_${ext}"
 
     pcRefactorPackageConfigFiles ${prefix} pcmap

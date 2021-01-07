@@ -32,5 +32,7 @@ to run (or else they will be skipped).
 
 ### Known issues
 
-The shared libraries (all programming environments) are currently not
-reliable, so only static libraries are made available.
+The AOCC OpenMP build is problematic. Almost all the test problems
+deadlock (other PrgEnvs ok). OpenMP is therefore "disabled" for AOCC
+by taking it out of the top level package config file.
+
