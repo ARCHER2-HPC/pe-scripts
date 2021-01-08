@@ -32,6 +32,7 @@ function matioBuildAocc {
     
     # buildVersion AOCC 2.1
     module -s restore PrgEnv-aocc
+    module list
 
     amd_version=2.1
     amd_root=${install_root}/AOCC
@@ -46,7 +47,8 @@ function matioBuildCray {
 
     # buildVersion CRAYCLANG 10.0
     module -s restore PrgEnv-cray
-    
+    module list
+
     cray_version=10.0
     cray_root=${install_root}/CRAYCLANG
     cray_prefix=${cray_root}/${cray_version}
@@ -61,7 +63,8 @@ function matioBuildGnu {
     # buildVersion GNU 9.3
     module -s restore PrgEnv-gnu
     module swap gcc gcc/9.3.0
-    
+    module list
+
     gnu_version=9.3
     gnu_root=${install_root}/GNU
     gnu_prefix=${gnu_root}/${gnu_version}
@@ -92,7 +95,8 @@ function matioBuildSerial {
     
     local prefix=${1}
 
-    ./sh/tpsl/matio.sh --jobs=16 --prefix=${prefix}
+    ./sh/tpsl/matio.sh --jobs=16 --prefix=${prefix} \
+		       --version=${MATIO_VERSION}
 
 }
 
