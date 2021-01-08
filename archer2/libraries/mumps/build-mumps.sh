@@ -34,7 +34,8 @@ function mumpsBuildAocc {
     moduleUseLibs
     module load parmetis/${PARMETIS_VERSION}
     module load scotch/${SCOTCH_VERSION}
-    
+    module list
+
     amd_version=2.1
     amd_root=${install_root}/AOCC
     amd_prefix=${amd_root}/${amd_version}
@@ -52,6 +53,7 @@ function mumpsBuildCray {
     moduleUseLibs
     module load parmetis/${PARMETIS_VERSION}
     module load scotch/${SCOTCH_VERSION}
+    module list
 
     cray_version=10.0
     cray_root=${install_root}/CRAYCLANG
@@ -71,7 +73,8 @@ function mumpsBuildGnu {
     moduleUseLibs
     module load parmetis/${PARMETIS_VERSION}
     module load scotch/${SCOTCH_VERSION}
-    
+    module list
+
     gnu_version=9.3
     gnu_root=${install_root}/GNU
     gnu_prefix=${gnu_root}/${gnu_version}
@@ -107,7 +110,8 @@ function mumpsBuildMPI {
 
     local prefix=${1}
 
-    ./sh/tpsl/mumps.sh --jobs=8 --prefix=${prefix} --modules
+    ./sh/tpsl/mumps.sh --jobs=8 --prefix=${prefix} --modules \
+		       --version=${MUMPS_VERSION}
 
     local pe=$(peEnvLower)
     local prefixlib="${prefix}/lib"
@@ -124,7 +128,8 @@ function mumpsBuildMPIOpenMP {
 
     local prefix=${1}
 
-    ./sh/tpsl/mumps.sh --jobs=16 --prefix=${prefix} --openmp --modules
+    ./sh/tpsl/mumps.sh --jobs=16 --prefix=${prefix} --openmp --modules \
+		       --version=${MUMPS_VERSION}
 
     local pe=$(peEnvLower)
     local prefixlib="${prefix}/lib"
@@ -150,7 +155,7 @@ function mumpsPackageConfigFiles {
     pcmap[description]="mumps library for ${prgEnv}"
     pcmap[has_openmp]=1
 
-    # While AOCC OpenMP is unreliable
+    # While AOCC OpenMP is unreliable, disable with expedient...
     if [[ "${prgEnv}" == "aocc" ]]; then
 	pcmap[has_openmp]=0
     fi
