@@ -32,6 +32,7 @@ function scotchBuildAocc {
     
     # buildVersion AOCC 2.1
     module -s restore PrgEnv-aocc
+    module list
 
     amd_version=2.1
     amd_root=${install_root}/AOCC
@@ -46,7 +47,8 @@ function scotchBuildCray {
 
     # buildVersion CRAYCLANG 10.0
     module -s restore PrgEnv-cray
-    
+    module list
+
     cray_version=10.0
     cray_root=${install_root}/CRAYCLANG
     cray_prefix=${cray_root}/${cray_version}
@@ -61,6 +63,7 @@ function scotchBuildGnu {
     # buildVersion GNU 9.3
     module -s restore PrgEnv-gnu
     module swap gcc gcc/9.3.0
+    module list
 
     gnu_version=9.3
     gnu_root=${install_root}/GNU
@@ -98,7 +101,7 @@ function scotchBuildMPI {
 
     local prefix=${1}
 
-    ./sh/tpsl/scotch.sh --jobs=16 --prefix=${prefix}
+    ./sh/tpsl/scotch.sh --jobs=16 --prefix=${prefix} --version=${SCOTCH_VERSION}
 
     local pe=$(peEnvLower)
     local prefixlib="${prefix}/lib"
