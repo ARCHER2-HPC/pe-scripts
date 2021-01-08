@@ -34,6 +34,7 @@ function metisBuildAocc {
     
     # buildVersion AOCC 2.1
     module -s restore PrgEnv-aocc
+    module list
 
     amd_version=2.1
     amd_root=${install_root}/AOCC
@@ -48,6 +49,7 @@ function metisBuildCray {
 
     # buildVersion CRAYCLANG 10.0
     module -s restore PrgEnv-cray
+    module list
 
     cray_version=10.0
     cray_root=${install_root}/CRAYCLANG
@@ -63,6 +65,7 @@ function metisBuildGnu {
     # buildVersion GNU 9.3
     module -s restore PrgEnv-gnu
     module swap gcc gcc/9.3.0
+    module list
 
     gnu_version=9.3
     gnu_root=${install_root}/GNU
@@ -97,7 +100,7 @@ function metisBuildSerial {
     local prefix=${1}
     printf "Build metis with prefix %s\n" "${prefix}"
 
-    ./sh/tpsl/metis.sh --jobs=16 --prefix=${prefix}
+    ./sh/tpsl/metis.sh --jobs=16 --prefix=${prefix} --version=${METIS_VERSION}
 
     local pe=$(peEnvLower)
     local newname=libmetis_${pe}.a
@@ -116,7 +119,7 @@ function metisBuildOpenMP {
     local pe=$(peEnvLower)
     local newname=libmetis_${pe}_mp.a
 
-    ./sh/tpsl/metis.sh --jobs=16 --prefix=${prefix} --openmp
+    ./sh/tpsl/metis.sh --jobs=16 --prefix=${prefix} --openmp --version=${METIS_VERSION}
     mv ${prefix}/lib/libmetis.a ${prefix}/lib/${newname}
     ccSharedFromStatic ${prefix}/lib metis_${pe}_mp
 }
