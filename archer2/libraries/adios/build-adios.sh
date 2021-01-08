@@ -41,7 +41,8 @@ function adiosBuildAocc {
     module -s restore PrgEnv-aocc
 
     adiosLoadModuleDependencies
-    
+    module list
+
     amd_version=2.1
     amd_root=${install_root}/AOCC
     amd_prefix=${amd_root}/${amd_version}
@@ -57,6 +58,7 @@ function adiosBuildCray {
     module -s restore PrgEnv-cray
 
     adiosLoadModuleDependencies
+    module list
 
     cray_version=10.0
     cray_root=${install_root}/CRAYCLANG
@@ -74,7 +76,8 @@ function adiosBuildGnu {
     module swap gcc gcc/9.3.0
 
     adiosLoadModuleDependencies
-    
+    module list
+
     gnu_version=9.3
     gnu_root=${install_root}/GNU
     gnu_prefix=${gnu_root}/${gnu_version}
@@ -102,7 +105,8 @@ function adiosBuildMPI {
 
     local prefix=${1}
 
-    ./sh/adios.sh --jobs=16 --prefix=${prefix}
+    ./sh/adios.sh --jobs=16 --prefix=${prefix} --version=${ADIOS_VERSION}
+
 }
 
 function adiosInstallModuleFile {
