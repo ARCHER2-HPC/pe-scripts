@@ -16,9 +16,9 @@ function main {
 
     local install_root=${prefix}/libs/parmetis/${PARMETIS_VERSION}
 
-    #parmetisBuildCray ${install_root}
-    #parmetisBuildGnu  ${install_root}
-    #parmetisBuildAocc ${install_root}
+    parmetisBuildCray ${install_root}
+    parmetisBuildGnu  ${install_root}
+    parmetisBuildAocc ${install_root}
 
     parmetisInstallModuleFile
     parmetisInstallationTest
@@ -33,6 +33,7 @@ function parmetisBuildAocc {
 
     moduleUseLibs
     module load metis/${METIS_VERSION}
+    module list
 
     amd_version=2.1
     amd_root=${install_root}/AOCC
@@ -50,7 +51,8 @@ function parmetisBuildCray {
 
     moduleUseLibs
     module load metis/${METIS_VERSION}
-    
+    module list
+
     cray_version=10.0
     cray_root=${install_root}/CRAYCLANG
     cray_prefix=${cray_root}/${cray_version}
@@ -68,7 +70,8 @@ function parmetisBuildGnu {
 
     moduleUseLibs
     module load metis/${METIS_VERSION}
-    
+    module list
+
     gnu_version=9.3
     gnu_root=${install_root}/GNU
     gnu_prefix=${gnu_root}/${gnu_version}
@@ -89,10 +92,10 @@ function parmetisBuild {
     parmetisPackageConfigFiles ${prefix}
 }
 
-# Remove any existing build directories
-
 function parmetisClean {
+
     rm -rf parmetis-${PARMETIS_VERSION}
+
 }
 
 function parmetisBuildMPI {
@@ -101,7 +104,7 @@ function parmetisBuildMPI {
 
     local prefix=${1}
 
-    ./sh/tpsl/parmetis.sh --jobs=16 --prefix=${prefix} --modules
+    ./sh/tpsl/parmetis.sh --jobs=16 --prefix=${prefix} --modules --version=${PARMETIS_VERSION}
 
     local pe=$(peEnvLower)
     local newname=libparmetis_${pe}_mpi.a
@@ -119,7 +122,8 @@ function parmetisBuildMPIOpenMP {
     local pe=$(peEnvLower)
     local newname=libparmetis_${pe}_mpi_mp.a
 
-    ./sh/tpsl/parmetis.sh --jobs=16 --prefix=${prefix} --openmp --modules
+    ./sh/tpsl/parmetis.sh --jobs=16 --prefix=${prefix} --openmp --modules --version=${PARMETIS_VERSION}
+
     mv ${prefix}/lib/libparmetis.a ${prefix}/lib/${newname}
     ccSharedFromStatic ${prefix}/lib parmetis_${pe}_mpi_mp
 }
