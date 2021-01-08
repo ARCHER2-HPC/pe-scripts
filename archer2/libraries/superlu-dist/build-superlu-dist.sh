@@ -35,6 +35,7 @@ function superludistBuildAocc {
 
     moduleUseLibs
     module load parmetis/${PARMETIS_VERSION}
+    module list
 
     amd_version=2.1
     amd_root=${install_root}/AOCC
@@ -52,7 +53,8 @@ function superludistBuildCray {
 
     moduleUseLibs
     module load parmetis/${PARMETIS_VERSION}
-    
+    module list
+
     cray_version=10.0
     cray_root=${install_root}/CRAYCLANG
     cray_prefix=${cray_root}/${cray_version}
@@ -70,7 +72,8 @@ function superludistBuildGnu {
 
     moduleUseLibs
     module load parmetis/${PARMETIS_VERSION}
-    
+    module list
+
     gnu_version=9.3
     gnu_root=${install_root}/GNU
     gnu_prefix=${gnu_root}/${gnu_version}
@@ -103,7 +106,8 @@ function superludistBuildMPI {
 
     local prefix=${1}
 
-    ./sh/tpsl/superlu-dist.sh --jobs=16 --prefix=${prefix} --modules
+    ./sh/tpsl/superlu-dist.sh --jobs=16 --prefix=${prefix} --modules \
+			      --version=${SUPERLUDIST_VERSION}
 
     local pe=$(peEnvLower)
     local newname=libsuperlu_dist_${pe}_mpi.a
@@ -121,7 +125,9 @@ function superludistBuildMPIOpenMP {
     local pe=$(peEnvLower)
     local newname=libsuperlu_dist_${pe}_mpi_mp.a
 
-    ./sh/tpsl/superlu-dist.sh --jobs=16 --prefix=${prefix} --openmp --modules
+    ./sh/tpsl/superlu-dist.sh --jobs=16 --prefix=${prefix} --openmp --modules \
+			      --version=${SUPERLUDIST_VERSION}
+
     mv ${prefix}/lib/libsuperlu_dist.a ${prefix}/lib/${newname}
     ccSharedFromStatic ${prefix}/lib superlu_dist_${pe}_mpi_mp
 }
