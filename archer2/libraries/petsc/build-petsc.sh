@@ -18,6 +18,7 @@ function main {
 
     petscBuildCray ${install_root}
     petscBuildGnu  ${install_root}
+    # AOCC is omitted pending investigation of link-stage issues
     #petscBuildAocc ${install_root}
 
     petscInstallModuleFile
@@ -44,7 +45,8 @@ function petscBuildAocc {
     module -s restore PrgEnv-aocc
 
     petscLoadModuleDependencies
-    
+    module list
+
     amd_version=2.1
     amd_root=${install_root}/AOCC
     amd_prefix=${amd_root}/${amd_version}
@@ -60,6 +62,7 @@ function petscBuildCray {
     module -s restore PrgEnv-cray
 
     petscLoadModuleDependencies
+    module list
 
     cray_version=10.0
     cray_root=${install_root}/CRAYCLANG
@@ -83,7 +86,8 @@ function petscBuildGnu {
     module swap gcc gcc/9.3.0
 
     petscLoadModuleDependencies
-    
+    module list
+
     gnu_version=9.3
     gnu_root=${install_root}/GNU
     gnu_prefix=${gnu_root}/${gnu_version}
@@ -116,7 +120,8 @@ function petscBuildMPIOpenMP {
 
     local prefix=${1}
 
-    ./sh/petsc.sh --jobs=16 --prefix=${prefix} --openmp --modules
+    ./sh/petsc.sh --jobs=16 --prefix=${prefix} --openmp --modules \
+		  --version=${PETSC_VERSION}
 }
 
 function petscInstallModuleFile {
