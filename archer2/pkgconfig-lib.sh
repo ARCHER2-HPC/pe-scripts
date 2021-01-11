@@ -2,20 +2,24 @@
 
 set -e
 
-function pcPackageConfigFiles {
+function pcCrayPkgGenRunAndProcess {
 
-    # Run craypkg-gen and then patch up the results
+    local prefix=${1} # We should have ${prefix}/lib
 
-    local prefix=${1} # pc files will be ${prefix}/lib/pkgconfig/*.pc
-    local -n pc=${2}  # pcmap associative array
-    
     module load craypkg-gen
     craypkg-gen -p ${prefix}
 
     printf "Generating updated pcfiles\n"
-    
-    local pcfiles="${prefix}/lib/pkgconfig"
-    pcFileUpdate ${pcfiles} pc
+
+    # Validation of the pc files may require:
+    export PKG_CONFIG_PATH=${prefix}/lib/pkgconfig:${PKG_CONFIG_PATH}
+
+    local files=(${prefix}/lib/pkgconfig/*.pc)
+
+    for file in "${files[@]}"; do
+       # For each pc file, rewrite in the correct form
+       pcCrayPkgGenFileProcess "${file}"
+    done
 
 }
 
@@ -54,9 +58,6 @@ function pcFileUpdate {
 
     # Remove _mp files from the list
     # Here we don't want an error if there is none
-
-    # Avoid messing with ls
-    #IFS=" " read -r -a files_mp <<< "`ls ${prefix}/*_mp.pc 2>/dev/null`"
 
     files_mp=(${prefix}/*_mp.pc)
 
@@ -139,6 +140,13 @@ function pcFileWriteOverallPackageFile {
     done
 
     printf "\n" >> ${pcnew}
+
+    # Explicit libs
+    if [[ -n ${pchash[libs]} ]]; then
+      lib=${pchash[libs]}
+      printf "Libs: %s\n " "${lib}" >> ${pcnew}
+    fi
+
 }
 
 function pcFileRefactor {
@@ -205,6 +213,95 @@ function pcFileRefactor {
       lib=${pchash[extra_libs]}
       printf "\${cray_as_needed}%s\${cray_no_as_needed}" "${lib}" >> ${pcnew}
     fi
+
+    printf "\n" >> ${pcnew}
+
+    # Libs.private
+    # No very easy way to get at these.
+    # 'pkg-config --libs-only-l --static' is too much.
+    # So slurp in the whole line and extract anything matching "-lname"
+    # Will not catch continuation markers.
+
+    printf "Libs.private: " >> ${pcnew}
+
+    IFS=" " read -r -a libs_line <<< "`grep Libs.private ${pcfile}`"
+
+    for word in "${libs_line[@]}"; do
+	[[ $word = -l* ]] && printf "%s " "${word}" >> ${pcnew}
+    done
+
+    printf "\n" >> ${pcnew}
+
+    # Validate the new file
+    pkg-config --validate ${pcnew}
+    mv ${pcnew} ${pcfile}
+}
+
+function pcCrayPkgGenFileProcess {
+
+    local pcfile=${1}    # Full path to existing pc file from craypkg-gen
+
+    # We overrite any existing file (but not yet)
+
+    pcnew="`dirname ${pcfile}`/tmp-pkgconfig.pc"
+    
+    printf "# pkg-config file automatically generated\n" > ${pcnew}
+    printf "\n" >> ${pcfile}
+    local name=$(sed -n -e 's/^Name: //p' ${pcfile})
+    local version=$(sed -n -e 's/^Version: //p' ${pcfile})
+    local description=$(sed -n -e 's/^Description: //p' ${pcfile})
+    printf "Name: %s\n" "${name}" >> ${pcnew}
+    printf "Version: %s\n" "${version}" >> ${pcnew}
+    printf "Description: %s\n" "${description}" >> ${pcnew}
+
+    requires="`pkg-config --print-requires ${pcfile}`"
+    requires_private="`pkg-config --print-requires-private ${pcfile}`"
+
+    # Replace newlines by space
+    requires="`echo ${requires} | tr "\n" " "`"
+    requires_private="`echo ${requires_private} | tr "\n" " "`"
+    
+    printf "\n" >> ${pcnew}
+    printf "Requires: %s\n" "${requires}" >> ${pcnew}
+    printf "Requires.private: %s\n" "${requires_private}" >> ${pcnew}
+    printf "\n" >> ${pcnew}
+
+    # Variable definitions
+
+    var_prefix="`pkg-config --print-variables ${pcfile} | grep prefix`"
+    var_libdir="`pkg-config --print-variables ${pcfile} | grep libdir`"
+    var_includedir="`pkg-config --print-variables ${pcfile} | grep includedir`"
+
+    value_prefix="`pkg-config --variable=${var_prefix} ${pcfile}`"
+    value_libdir="-L\${${var_prefix}}/lib"
+    value_includedir="-I\${${var_prefix}}/include"
+
+    printf "${var_prefix}= %s\n" "${value_prefix}" >> ${pcnew}
+    printf "${var_libdir}= %s\n" "${value_libdir}" >> ${pcnew}
+    printf "${var_includedir}= %s\n" "${value_includedir}" >> ${pcnew} 
+
+    # Additional variables:
+
+    printf "\n" >> ${pcnew}
+    printf "cray_as_needed=\n" >> ${pcnew}
+    printf "cray_no_as_needed=\n" >> ${pcnew}
+    printf "\n" >> ${pcnew}
+
+    # Cflags:
+
+    cflags="\${${var_includedir}}"
+    printf "Cflags: %s\n" "${cflags}" >> ${pcnew}
+
+    # Libs: separate into an array for individual archives
+    # IFS is the internal field separator: a space
+
+    IFS=" " read -r -a libs <<< "`pkg-config --libs-only-l ${pcfile}`"
+
+    printf "Libs: \${${var_libdir}} " >> ${pcnew}
+
+    for lib in "${libs[@]}"; do
+      printf "\${cray_as_needed}%s\${cray_no_as_needed} " "${lib}" >> ${pcnew}
+    done
 
     printf "\n" >> ${pcnew}
 
