@@ -59,16 +59,18 @@ Some details for each package will appear here.
 
 ## Library modules (others via pe-scripts)
 
-| Package      | Version  | Dependencies            | OpenMP? | MPI? |
-|--------------|----------|-------------------------|---------|------|
-| adios        | 1.13.1   | cray-hdf5-parallel      | no      | yes  |
-| boost        | tbc      | none                    | -       | -    |
-| petsc        | 3.13.3   | superlu, superlu-dist,  |         |      |
-|              |          | metis, parmetis, scotch,|         |      |
-|              |          | mumps                   | yes     | yes  |
-| slepc        |          | petsc                   |         |      |
-| trilinos     |          | kitchen sink            |         |      |
-
+| Package      | Version  | Dependencies               | OpenMP? | MPI? |
+|--------------|----------|----------------------------|---------|------|
+| adios        | 1.13.1   | cray-hdf5-parallel         | no      | yes  |
+| boost        | 1.72.0   | none                       | no      | yes  |
+| petsc        | 3.13.3   | superlu, superlu-dist,     | yes     | yes  |
+|              |          | metis, parmetis, scotch,   |         |      |
+|              |          | mumps                      |         |      |
+| slepc        | tbc      | petsc                      |         |      |
+| trilinos     | 12.18.1  | cray-hdf5-parallel         | yes     | yes  |
+|              |          | cray-netcdf-hdf5parallel   |         |      |
+|              |          | tpsl (bar hypre,sundials)  |         |      |
+|              |          | boost                      |         |      |
 
 ## Library modules (other CSE)
 
