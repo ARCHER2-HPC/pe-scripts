@@ -140,7 +140,7 @@ $show_help && exit $status
 
 # Check that our wget "works"
 $WGET --version >/dev/null 2>&1 \
-  || fn_error "set the WGET variable to a functional wget program"
+  || fn_warn "set the WGET variable to a functional wget program"
 
 export CRAYPE_LINK_TYPE=dynamic
 
