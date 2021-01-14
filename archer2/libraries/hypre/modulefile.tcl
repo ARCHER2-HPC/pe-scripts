@@ -13,7 +13,7 @@ source ${module_root}/archer-pkgconfig-tcl.lib
 
 # Clashes
 
-conflict mumps
+conflict hypre
 
 proc ModulesHelp { } {
   puts stderr "HYPRE"
