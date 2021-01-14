@@ -91,7 +91,6 @@ if { ! [ info exists env(PE_ENV) ] } {
     set product_curpath $pe_product_dir/$compiler/$gen_compiler
 
     # Potential change while module is loaded not handled
-    prepend-path PATH $product_curpath/bin
     prepend-path MANPATH $product_curpath/share/man  
 
     # Also non-volatile
@@ -99,7 +98,7 @@ if { ! [ info exists env(PE_ENV) ] } {
 
     # load or remove paths
     if { ! [ module-info mode remove ] } {
-      prepend-path PATH $product_curpath/lib
+      prepend-path PATH $product_curpath/bin
     } else {
       set oldpath $env(PATH)
       foreach mod [ split $oldpath ':' ] {
