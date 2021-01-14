@@ -53,7 +53,7 @@ Some details for each package will appear here.
 | mumps        | 5.2.1    | metis, parmetis, scotch | yes     | yes  |
 | parmetis     | 4.0.3    | none                    | yes     | yes  |
 | scotch       | 6.0.10   | none                    | no      | yes  |
-| sundials     | tbc      | none                    | -       | -    |
+| sundials     | 4.1.0    | none                    | yes     | yes  |
 | superlu      | 5.2.1    | none                    | no      | no   |
 | superlu-dist | 6.1.1    | metis, parmetis         | yes     | yes  |
 
