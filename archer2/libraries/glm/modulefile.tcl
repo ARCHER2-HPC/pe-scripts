@@ -53,8 +53,9 @@ if { ! [ info exists env(PE_ENV) ] } {
   set pe_product_dir $prod_root
   set pe_pkgconfig_libs $lcName
 
-  prepend-path PE_PKGCONFIG_LIBS $pe_pkgconfig_libs
-  setenv PE_${ucName}_PKGCONFIG_LIBS  $pe_pkgconfig_libs
+  # CC only
+  prepend-path PE_CXX_PKGCONFIG_LIBS $pe_pkgconfig_libs
+  setenv PE_${ucName}_CXX_PKGCONFIG_LIBS  $pe_pkgconfig_libs
 
   # If the currently loaded compiler version is not available,
   # look for the most recent previous version...
