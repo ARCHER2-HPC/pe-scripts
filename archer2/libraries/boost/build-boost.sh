@@ -129,9 +129,11 @@ function boostPackageConfigFile {
     pcmap[has_openmp]=0
     pcmap[libs]="-lpthread -lm" # AOCC only really
 
+    # Order is important for link stage...
     pcmap[requires]="boost_coroutine boost_log_setup boost_log boost_timer boost_type_erasure boost_wave boost_atomic boost_chrono boost_container boost_fiber boost_context boost_contract boost_date_time boost_filesystem boost_graph_parallel boost_graph boost_mpi boost_iostreams boost_locale boost_math_c99f boost_math_c99l boost_math_c99 boost_math_tr1f boost_math_tr1l boost_math_tr1 boost_prg_exec_monitor boost_program_options boost_random boost_regex boost_wserialization boost_serialization boost_stacktrace_addr2line boost_stacktrace_basic boost_stacktrace_noop boost_system boost_thread boost_unit_test_framework boost_test_exec_monitor boost_exception"
 
-    pcFileWriteOverallPackageFile "${prefix}/lib/pkgconfig/boost.pc" pcmap
+    pcFileWriteOverallPackageFile "${prefix}/lib/pkgconfig/boost-cxx.pc" pcmap
+
 }
 
 function boostInstallModuleFile {

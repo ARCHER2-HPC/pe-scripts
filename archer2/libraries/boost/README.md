@@ -34,6 +34,11 @@ the various libraries via the order of the requirements
 
 ## Module
 
+For Boost, the module sets only `PE_CXX_PKGCONFIG_LIBS` so that only
+the CC wrapper picks up the Boost stuff. (Fortran would need a
+separate package config file.) Anyone rash enough to try linking
+with anything other than `CC` will need to do it by hand.
+
 The template modulefile `modulefile.tcl` defines `BOOST_DIR`.
 There are no dependencies on other modules.
 
