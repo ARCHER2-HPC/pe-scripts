@@ -288,6 +288,40 @@ case "$compiler" in
   *) mpi_long_double=1 ;;
 esac
 
+if test ${make_using_modules} -eq 1; then
+  boost_dir=${BOOST_DIR}
+  gml_dir=${GLM_DIR}
+  matio_dir=${MATIO_DIR}
+  metis_dir=${METIS_DIR}
+  mumps_dir=${MUMPS_DIR}
+  parmetis_dir=${PARMETIS_DIR}
+  scotch_dir=${SCOTCH_DIR}
+  superlu_dir=${SUPERLU_DIR}
+  superlu_dist_dir=${SUPERLU_DIST_DIR}
+  metis_libs=""
+  parmetis_libs=""
+  mumps_libs=""
+  scotch_libs=""
+  superlu_libs=""
+  superlu_dist_libs=""
+else
+  boost_dir=${prefix}
+  gml_dir=${prefix}
+  matio_dir=${prefix}
+  metis_dir=${prefix}
+  mumps_dir=${prefix}
+  parmetis_dir=${prefix}
+  scotch_dir=${prefix}
+  superlu_dir=${prefix}
+  superlu_dist_dir=${prefix}
+  metis_libs="metis"
+  parmetis_libs="parmetis;metis"
+  mumps_libs="dmumps;zmumps;smumps;cmumps;mumps_common;esmumps;ptesmumps;parmetis;ptscotch;scotch;scotcherr;pord"
+  scotch_libs="ptscotch;ptscotcherr;scotch;scotcherr"
+  superlu_libs="superlu superlu_3.0 superlu_4.0 superlu_4.1 superlu_4.2 superlu_4.3 superlu_5.0 superlu_5.1.1 superlu_5.2.1"
+  superlu_dist_libs="superludist superlu_dist superlu_dist_2.0 superlu_dist_2.5 superlu_dist_4.0"
+fi
+
 mkdir -p _build && cd _build
 cat >configure-trilinos.sh <<EOF
 #!/bin/sh
@@ -332,33 +366,37 @@ unset DESTDIR # Prevent installing into anything but \$CMAKE_INSTALL_PREFIX
   -D LAPACK_LIBRARY_NAMES="" \\
   -D SCALAPACK_LIBRARY_NAMES="" \\
   -D TPL_ENABLE_Scotch:BOOL=ON \\
-  -D TPL_Scotch_INCLUDE_DIRS:FILEPATH=$prefix/include \\
-  -D Scotch_LIBRARY_DIRS:FILEPATH=$prefix/lib \\
+  -D TPL_Scotch_INCLUDE_DIRS:FILEPATH=${scotch_dir}/include \\
+  -D Scotch_LIBRARY_DIRS:FILEPATH=${scotch_dir}/lib \\
+  -D Scotch_LIBRARY_NAMES="${scotch_libs}" \\
   -D TPL_ENABLE_SuperLU:BOOL=ON \\
-  -D TPL_SuperLU_INCLUDE_DIRS:FILEPATH=$prefix/include \\
-  -D SuperLU_LIBRARY_DIRS:FILEPATH=$prefix/lib \\
+  -D TPL_SuperLU_INCLUDE_DIRS:FILEPATH=${superlu_dir}/include \\
+  -D SuperLU_LIBRARY_DIRS:FILEPATH=${superlu_dir}/lib \\
+  -D SuperLU_LIBRARY_NAMES="${superlu_libs}" \\
   -D HAVE_SUPERLU_GLOBALLU_T_ARG:BOOL=YES \\
   -D TPL_ENABLE_SuperLUDist:BOOL=ON \\
-  -D TPL_SuperLUDist_INCLUDE_DIRS:FILEPATH=$prefix/include \\
-  -D SuperLUDist_LIBRARY_DIRS:FILEPATH=$prefix/lib \\
+  -D TPL_SuperLUDist_INCLUDE_DIRS:FILEPATH=${superlu_dist_dir}/include \\
+  -D SuperLUDist_LIBRARY_DIRS:FILEPATH=${superlu_dist_dir}/lib \\
+  -D SuperLUDist_LIBRARY_NAMES="${superlu_dist_libs}" \\
   -D HAVE_SUPERLUDIST_ENUM_NAMESPACE:BOOL=YES \\
   -D HAVE_SUPERLUDIST_LUSTRUCTINIT_2ARG:BOOL=YES \\
   -D TPL_ENABLE_METIS:BOOL=ON \\
-  -D TPL_METIS_INCLUDE_DIRS:FILEPATH=$prefix/include \\
-  -D METIS_LIBRARY_DIRS:FILEPATH=$prefix/lib \\
+  -D TPL_METIS_INCLUDE_DIRS:FILEPATH=${metis_dir}/include \\
+  -D METIS_LIBRARY_DIRS:FILEPATH=${metis_dir}/lib \\
+  -D METIS_LIBRARY_NAMES="${metis_libs}" \\
   -D TPL_ENABLE_ParMETIS:BOOL=ON \\
-  -D TPL_ParMETIS_INCLUDE_DIRS:FILEPATH="$prefix/include" \\
-  -D ParMETIS_LIBRARY_DIRS:FILEPATH="$prefix/lib" \\
-  -D ParMETIS_LIBRARY_NAMES:STRING="parmetis;metis" \\
+  -D TPL_ParMETIS_INCLUDE_DIRS:FILEPATH="${parmetis_dir}/include" \\
+  -D ParMETIS_LIBRARY_DIRS:FILEPATH="${parmetis_dir}/lib" \\
+  -D ParMETIS_LIBRARY_NAMES:STRING="${parmetis_libs}" \\
   -D TPL_ENABLE_MUMPS:BOOL=ON \\
-  -D TPL_MUMPS_INCLUDE_DIRS:FILEPATH=$prefix/include \\
-  -D MUMPS_LIBRARY_DIRS:FILEPATH="$prefix/lib" \\
-  -D MUMPS_LIBRARY_NAMES:STRING="dmumps;zmumps;smumps;cmumps;mumps_common;esmumps;ptesmumps;parmetis;ptscotch;scotch;scotcherr;pord" \\
+  -D TPL_MUMPS_INCLUDE_DIRS:FILEPATH=${mumps_dir}/include \\
+  -D MUMPS_LIBRARY_DIRS:FILEPATH="${mumps_dir}/lib" \\
+  -D MUMPS_LIBRARY_NAMES:STRING="${mumps_libs}" \\
   -D TPL_ENABLE_Matio:BOOL=ON \\
-  -D TPL_Matio_INCLUDE_DIRS:FILEPATH=$prefix/include \\
-  -D Matio_LIBRARY_DIRS:FILEPATH=$prefix/lib \\
+  -D TPL_Matio_INCLUDE_DIRS:FILEPATH=${matio_dir}/include \\
+  -D Matio_LIBRARY_DIRS:FILEPATH=${matio_dir}/lib \\
   -D TPL_ENABLE_GLM:BOOL=ON \\
-  -D TPL_GLM_INCLUDE_DIRS:FILEPATH=$prefix/include \\
+  -D TPL_GLM_INCLUDE_DIRS:FILEPATH=${glm_dir}/include \\
   -D TPL_ENABLE_HDF5:BOOL=ON \\
   -D TPL_HDF5_INCLUDE_DIRS:FILEPATH=\$HDF5_DIR/include \\
   -D HDF5_LIBRARY_DIRS:FILEPATH="\$HDF5_DIR/lib" \\
@@ -368,10 +406,10 @@ unset DESTDIR # Prevent installing into anything but \$CMAKE_INSTALL_PREFIX
   -D Netcdf_LIBRARY_DIRS:FILEPATH="\$NETCDF_DIR/lib;\$HDF5_DIR/lib" \\
   -D Netcdf_LIBRARY_NAMES:STRING="netcdf_parallel;hdf5_hl_parallel;hdf5_parallel;z;dl" \\
   -D TPL_ENABLE_Boost:BOOL=ON \\
-  -D TPL_Boost_INCLUDE_DIRS:FILEPATH=$prefix/include \\
+  -D TPL_Boost_INCLUDE_DIRS:FILEPATH=${boost_dir}/include \\
   -D TPL_ENABLE_BoostLib:BOOL=ON \\
-  -D TPL_BoostLib_INCLUDE_DIRS:FILEPATH=$prefix/include \\
-  -D BoostLib_LIBRARY_DIRS:FILEPATH=$prefix/lib \\
+  -D TPL_BoostLib_INCLUDE_DIRS:FILEPATH=${boost_dir}/include \\
+  -D BoostLib_LIBRARY_DIRS:FILEPATH=${boost_dir}/lib \\
   -D TPL_ENABLE_X11:BOOL=OFF \\
   -D TPL_ENABLE_MPI:BOOL=ON \\
   -D MPI_BASE_DIR:FILEPATH=$mpich \\
