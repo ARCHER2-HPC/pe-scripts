@@ -82,6 +82,10 @@ function scotchBuild {
     scotchBuildMPI ${prefix}
 
     scotchPackageConfigFiles ${prefix}
+
+    # At the moment we are removing any shared objects as we haven't
+    # got all the correct names/run time behaviour.
+    rm -f ${prefix}/lib/*.so
 }
 
 function scotchClean {
@@ -107,8 +111,6 @@ function scotchBuildMPI {
     local prefixlib="${prefix}/lib"
 
     # Postfix ${pe}_mpi
-    #rm ${prefixlib}/libscotcherrexit.a
-    #rm ${prefixlib}/libptscotcherrexit.a
 
     for lib in scotch scotcherr scotchmetis esmumps; do
       mv ${prefixlib}/lib${lib}.a ${prefixlib}/lib${lib}_${pe}.a
@@ -199,9 +201,6 @@ function scotchTest {
     module use ${module_use}
 
     module load scotch/${version}
-
-    # Remove shared objects from package config stage
-    rm -f ${SCOTCH_DIR}/lib/*.so
 
     scotchClean
     tar xf scotch_${version}.tar.gz
