@@ -92,6 +92,11 @@ function superludistBuild {
     superludistBuildMPI ${prefix}
 
     superludistPackageConfigFiles ${prefix}
+
+    # Remove any shared objects from the package config stage
+    # ... as we are not having any at the moment.
+    rm  ${prefix}/lib/*.so
+
 }
 
 function superludistClean {
@@ -205,9 +210,7 @@ function superludistTest {
     module use ${module_use}
 
     module load superlu-dist/${version}
-
-    # Remove any shared objects from the package config stage
-    rm  ${SUPERLU_DIST_DIR}/lib/*.so
+    module list
 
     # Run standard examples with the distribution with a doctored
     # Makefile

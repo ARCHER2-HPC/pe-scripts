@@ -90,6 +90,10 @@ function parmetisBuild {
     parmetisBuildMPI ${prefix}
 
     parmetisPackageConfigFiles ${prefix}
+
+    # Remove shared objects from package config stage
+    rm ${prefix}/lib/*.so
+
 }
 
 function parmetisClean {
@@ -195,10 +199,8 @@ function parmetisTest {
     module use ${module_use}
 
     module load parmetis/${PARMETIS_VERSION}
+    printf "PARMETIS_DIR: %s\n" "${PARMETIS_DIR}"
 
-    # Remove shared objects from package config stage
-    rm -f ${PARMETIS_DIR}/lib/*.so
-    
     cd parmetis-${PARMETIS_VERSION}
 
     cp ${script_dir}/parmetis-install.c parmetis-install.c

@@ -85,6 +85,10 @@ function metisBuild {
     metisBuildSerial ${prefix}
 
     metisPackageConfigFiles ${prefix}
+
+    # Remove shared objects here
+    rm ${prefix}/lib/lib*.so
+
 }
 
 function metisClean {
@@ -196,9 +200,7 @@ function metisTest {
     module use ${module_use}
 
     module load metis/${METIS_VERSION}
-
-    # Remove shared objects here
-    rm -f ${METIS_DIR}/lib/*so
+    printf "METIS_DIR: %s\n" "${METIS_DIR}"
     
     cd metis-${METIS_VERSION}
 

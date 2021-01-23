@@ -78,6 +78,10 @@ function superluBuild {
     superluClean
     superluBuildSerial ${prefix}
     superluPackageConfigFiles ${prefix}
+
+    # Remove shared objects from package config stage
+    rm ${prefix}/lib/lib*.so
+
 }
 
 function superluClean {
@@ -170,9 +174,7 @@ function superluTest {
     module use ${module_use}
 
     module load superlu/${version}
-
-    # Remove shared objects from package config stage
-    rm ${SUPERLU_DIR}/lib/*.so
+    printf "SUPERLU_DIR: %s\n" "${SUPERLU_DIR}"
 
     # Run standard examples from EXAMPLE and FORTRAN subdirectories
     superluClean

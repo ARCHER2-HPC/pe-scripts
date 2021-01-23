@@ -93,6 +93,10 @@ function mumpsBuild {
     mumpsBuildMPI ${prefix}
 
     mumpsPackageConfigFiles ${prefix}
+
+    # Clear up temporaryy shared objects
+    rm ${prefix}/lib/lib*.so
+
 }
 
 function mumpsClean {
@@ -211,10 +215,8 @@ function mumpsTest {
     module use ${module_use}
 
     module load mumps/${MUMPS_VERSION}
+    printf "MUMPS_DIR: %s\n" "${MUMPS_DIR}"
 
-    # REMOVE *.so to PASS!
-    rm -f ${MUMPS_DIR}/lib/*.so
-    
     cd MUMPS_${MUMPS_VERSION}/examples
     cp ${script_dir}/Makefile.examples Makefile
 

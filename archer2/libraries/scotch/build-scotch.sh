@@ -85,7 +85,7 @@ function scotchBuild {
 
     # At the moment we are removing any shared objects as we haven't
     # got all the correct names/run time behaviour.
-    rm -f ${prefix}/lib/*.so
+    rm ${prefix}/lib/*.so
 }
 
 function scotchClean {
@@ -201,6 +201,7 @@ function scotchTest {
     module use ${module_use}
 
     module load scotch/${version}
+    printf "SCOTCH_DIR: %s\n" "${SCOTCH_DIR}"
 
     scotchClean
     tar xf scotch_${version}.tar.gz

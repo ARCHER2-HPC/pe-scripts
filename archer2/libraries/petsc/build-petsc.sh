@@ -178,6 +178,7 @@ function petscTest {
     module use ${module_use}
 
     module load petsc/${PETSC_VERSION}
+    printf "PETSC_DIR: %s\n" "${PETSC_DIR}"
     
     cd petsc-${PETSC_VERSION}
 
