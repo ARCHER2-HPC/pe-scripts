@@ -1,0 +1,29 @@
+--- debug.h.orig	2020-12-07 10:40:45.000000000 +0000
++++ debug.h	2021-01-24 15:54:56.000000000 +0000
+@@ -1,16 +1,16 @@
+ !
+-!\SCCS Information: @(#)
++! SCCS Information: @(#)
+ ! FILE: debug.h   SID: 2.3   DATE OF SID: 11/16/95   RELEASE: 2
+ !
+ !     %---------------------------------%
+ !     | See debug.doc for documentation |
+ !     %---------------------------------%
+-      integer  logfil, ndigit, mgetv0,                                &
+-               msaupd, msaup2, msaitr, mseigt, msapps, msgets, mseupd,&
+-               mnaupd, mnaup2, mnaitr, mneigh, mnapps, mngets, mneupd,&
+-               mcaupd, mcaup2, mcaitr, mceigh, mcapps, mcgets, mceupd
+-      common /debug/                                                  &
+-               logfil, ndigit, mgetv0,                                &
+-               msaupd, msaup2, msaitr, mseigt, msapps, msgets, mseupd,&
+-               mnaupd, mnaup2, mnaitr, mneigh, mnapps, mngets, mneupd,&
+-               mcaupd, mcaup2, mcaitr, mceigh, mcapps, mcgets, mceupd
++      integer  logfil, ndigit, mgetv0,                              
++     &         msaupd, msaup2, msaitr, mseigt, msapps, msgets, mseupd,
++     &         mnaupd, mnaup2, mnaitr, mneigh, mnapps, mngets, mneupd,
++     &         mcaupd, mcaup2, mcaitr, mceigh, mcapps, mcgets, mceupd
++      common /debug/
++     &         logfil, ndigit, mgetv0,
++     &         msaupd, msaup2, msaitr, mseigt, msapps, msgets, mseupd,
++     &         mnaupd, mnaup2, mnaitr, mneigh, mnapps, mngets, mneupd,
++     &         mcaupd, mcaup2, mcaitr, mceigh, mcapps, mcgets, mceupd

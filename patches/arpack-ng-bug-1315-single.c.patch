@@ -1,0 +1,11 @@
+--- TESTS/bug_1315_single.c~	2020-12-07 10:40:45.000000000 +0000
++++ TESTS/bug_1315_single.c	2021-01-24 17:46:02.000000000 +0000
+@@ -85,7 +85,7 @@
+   int i;
+   for (i = 0; i < nev; ++i) {
+     printf("%f\n", dr[i]);
+-    if (fabs(dr[i] - (float)(1000 - i)) > 1e-2) {
++    if (fabs(dr[i] - (float)(1000 - i)) > 2e-2) {
+       free(dr);
+       free(di);
+       exit(EXIT_FAILURE);
