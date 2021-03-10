@@ -14,6 +14,8 @@ module load cray-netcdf-hdf5parallel
 * Note that gcc version 10.1.0 is stricter than previous versions in relation
 to mismatched Fortran argument types.
 
+For further information see the README in the `archer2` subdirectory.
+
 ## Supported Products
 
 * TPSL - Cray's collection of third-party scientific libraries
