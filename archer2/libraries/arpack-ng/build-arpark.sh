@@ -89,6 +89,13 @@ function arpackBuild {
 
     # At the moment we are removing any shared objects
     rm ${prefix}/lib/lib*.so
+
+    # Irksome: include/arpack/arpackdef.h is what none of the examples
+    # expect. Add some links from include for each header?
+
+    cd ${prefix}/include
+    # Requires investigation
+    cd -
 }
 
 function arpackClean {
@@ -193,6 +200,7 @@ function arpackTest {
     printf "ARPACK_DIR: %s\n" "${ARPACK_DIR}"
 
     printf "Please provide installation test\n"
+
 }
 
 main
