@@ -72,7 +72,7 @@ Some details for each package will appear here.
 | petsc        | 3.13.3   | superlu, superlu-dist,     | yes     | yes  |
 |              |          | metis, parmetis, scotch,   |         |      |
 |              |          | mumps                      |         |      |
-| slepc        | tbc      | petsc                      |         |      |
+| slepc        | 3.13.2   | petsc                      |         |      |
 | trilinos     | 12.18.1  | cray-hdf5-parallel         | yes     | yes  |
 |              |          | cray-netcdf-hdf5parallel   |         |      |
 |              |          | tpsl (bar hypre,sundials)  |         |      |
