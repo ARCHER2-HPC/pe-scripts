@@ -41,6 +41,7 @@ in time (as the likelihood of failure) is low enough.
 * [SLEPc](https://slepc.upv.es)
 * [Trilinos](https://www.trilinos.org)
 * [ADIOS](https://www.olcf.ornl.gov/center-projects/adios/)
+* [CMake](https://cmake.org/)
 
 ## Usage
 These scripts do not handle dependency resolution,
