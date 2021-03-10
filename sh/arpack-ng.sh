@@ -90,6 +90,7 @@ mkdir build && cd build
 cat >>initial.cmake<<EOF
 set(EXAMPLES true CACHE BOOL "EXAMPLES=ON")
 set(MPI true CACHE BOOL "MPI=ON")
+set(ICB true CACHE BOOL "Iso C binding")
 set(BUILD_SHARED_LIBS false CACHE BOOL "BUILD_SHARED_LIBS= as advertised ")
 set(BLAS_LIBRARIES "${CRAY_LIBSCI_PREFIX_DIR}/lib" CACHE FILEPATH "FindBLAS")
 set(LAPACK_LIBRARIES "${CRAY_LIBSCI_PREFIX_DIR}/lib" CACHE FILEPATH "FindLAPACK"
