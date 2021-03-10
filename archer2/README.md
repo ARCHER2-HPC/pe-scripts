@@ -18,7 +18,13 @@ against OpenMP should contain an `_mp` in their name. The appropriate
 library is selected at compile/link determined by the presence or
 absence of `-fopenmp` (or the apprpriate option).
 
-
+There are two additional options implemented via `../sh/preamble.sh`. These
+are
+```
+--modules   Use modules for dependency locations (default is prefix location).
+--openmp    Use OpenMP (default is no OpenMP).
+--shared    Build shared libraries (if supported). Default is static.
+```
 
 ## Usage
 
@@ -74,5 +80,4 @@ Some details for each package will appear here.
 
 ## Library modules (other CSE)
 
-Pending: Arpack-NG
 
