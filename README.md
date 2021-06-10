@@ -3,18 +3,25 @@
 These scripts are intended to be used for building
 software products under the Cray PE environment.
 
-## Archer2
+## Archer2 Specific Information
 
-Load the relevant Programming Environment and additional modules, e.g., 
-```
-module restore PrgEnv-gnu
-module load cray-hdf5-parallel
-module load cray-netcdf-hdf5parallel
-```
-* Note that gcc version 10.1.0 is stricter than previous versions in relation
-to mismatched Fortran argument types.
+There is an additional branch in this repository covering three programming
+environments on Archer2 (CRAYCLANG, GNU, and AOCC):
 
-For further information see the README in the `archer2` subdirectory.
+* cse-develop
+
+Please commit any relevant updates to this branch (not the master).
+A further tagged
+version is available for the standard releases available on the machine.
+
+### Archer2 general comments
+
+* A number of downloads have been adjusted along with relevant `sha256` sums/
+* A number of tests have been enabled as part of the build stage if the
+overhead in time (as the likelihood of failure) is low enough.
+* An option to build shared libraries has been added to the preamble.
+
+See the `archer2` subdirectory for further details.
 
 ## Supported Products
 
@@ -34,6 +41,7 @@ For further information see the README in the `archer2` subdirectory.
 * [SLEPc](https://slepc.upv.es)
 * [Trilinos](https://www.trilinos.org)
 * [ADIOS](https://www.olcf.ornl.gov/center-projects/adios/)
+* [CMake](https://cmake.org/)
 
 ## Usage
 These scripts do not handle dependency resolution,

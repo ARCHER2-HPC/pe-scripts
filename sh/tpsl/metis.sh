@@ -30,9 +30,18 @@ echo "$SHA256SUM  metis-$VERSION.tar.gz" | sha256sum --check \
 tar xf metis-$VERSION.tar.gz \
   || fn_error "could not untar source"
 cd metis-$VERSION
+
+# Any appearance of "shared" at the config stage will turn on
+# shared libraries (irrespective of value)
+if test ${make_shared} -eq 1; then
+  config_shared="shared=1"
+else
+  config_shared=""
+fi
+
 make config \
   prefix="$prefix" cc=cc CFLAGS="$CFLAGS $OMPFLAG" openmp=${make_openmp} \
-  || fn_error "configuration failed"
+  ${config_shared} || fn_error "configuration failed"
 make --jobs=$make_jobs install \
   || fn_error "build failed"
 fn_checkpoint_tpsl

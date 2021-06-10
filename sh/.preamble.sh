@@ -52,6 +52,62 @@ fn_checkpoint_tpsl(){
   fi
 }
 
+fn_check_tar_version(){
+  if ${fn_cv_check_tar_version_done+:}; then return; fi
+  # Versions of tar < 1.27 produce slightly different header entries
+  # for the "devmajor", "devminor", and "cksum" header fields.
+  tar --mtime=0 --owner=root --group=root \
+      --pax-option=exthdr.name=%d/PaxHeaders/%f,mtime=0,delete=atime,delete=ctime \
+      --pax-option=globexthdr.name=/tmp/GlobalHead.%n --pax-option=globexthdr.mtime=0 \
+      --files-from=/dev/null -cf - \
+    | sha256sum | awk '{print $1}' \
+    | test `cat` = 89e86be755e306be8e78b8df6031ed20f693eeacd886af8701c6c534aa94be0f \
+    && fn_cv_check_tar_version_done=yes \
+    || fn_error "requires tar >= 1.27"
+}
+
+fn_pack_git_tarball(){
+  dir="$1"
+  fn_check_tar_version
+  printf "packing tarball";
+  # We need reproducible tarball generation.  We'd like to use tar's
+  # "--sort=name" option, which was added in tar 1.28, but it's not
+  # available on some OS's we need to support.  So instead fall back
+  # to providing sorted filenames to tar through the slightly-slower
+  # `find | sort`.
+  export LC_ALL=POSIX;   # for deterministic sorting
+  mtime=`cd $dir && git log -n 1 --pretty=format:"%at"`
+  find $dir -name '.git' -prune -o -print | sort \
+    | tar --checkpoint=1000 --checkpoint-action=exec='printf .' \
+          --mtime=@$mtime \
+          --owner=root:0 --group=root:0 \
+          --pax-option=globexthdr.name=/tmp/GlobalHead.%n \
+          --pax-option=globexthdr.mtime=$mtime \
+          --pax-option=exthdr.name=%d/PaxHeaders/%f,delete=atime,delete=ctime,mtime=$mtime \
+          --exclude=.gitignore --exclude=.gitmodules --exclude=.gitattributes \
+          --no-recursion --files-from=- -cJf $dir.tar.xz \
+    && printf "done\n"
+}
+
+fn_create_git_tarball()
+{
+  dir="$1"
+  checkout="fn_${PACKAGE}_git_checkout"
+  fn_check_tar_version
+  case "$(command -v $checkout)" in
+    $checkout)
+      if ! $checkout $dir ; then
+        fn_error "don't know how to make release tarball for version $VERSION"
+      fi ;;
+    "") fn_error "missing definition of $checkout" ;;
+  esac \
+    && fn_pack_git_tarball $dir \
+    && { printf "removing intermediate source directory..." ;
+         rm -rf $dir ;
+         printf "done\n" ; } \
+    || fn_error "could not create tarball for version $VERSION from git"
+}
+
 arg_prev=
 for arg_option ; do
   # If the previous option needs an argument, assign it.
@@ -138,6 +194,15 @@ if test "$VERSION" -a ! "$SHA256SUM" ; then \
 fi
 $show_help && exit $status
 
+# Check that the install prefix is absolute
+case "$prefix" in
+  /*) : ;;
+  *) fn_error "installation prefix must be absolute" ;;
+esac
+# Add any "bin" directory from $prefix to PATH
+test -d "$prefix/bin" \
+  && PATH="$prefix/bin:$PATH"
+
 # Check that our wget "works"
 $WGET --version >/dev/null 2>&1 \
   || fn_warn "set the WGET variable to a functional wget program"
@@ -153,7 +218,8 @@ case $PE_ENV in
       compiler=cray
     fi
     ;;
-  GNU|INTEL|PGI|AOCC) compiler=`echo $PE_ENV | tr A-Z a-z` ;;
+  GNU|INTEL|PGI|ALLINEA|AOCC)
+    compiler=`echo $PE_ENV | tr A-Z a-z` ;;
   *) fn_error "could not detect compiler vendor" ;;
 esac
 
@@ -165,11 +231,14 @@ case "$compiler" in
 esac
 case "$compiler" in
   cray)  OMPFLAG="-homp" ;;
-  gnu)   OMPFLAG="-fopenmp" ;;
   intel) OMPFLAG="-qopenmp" ;;
   pgi)   OMPFLAG="-mp" ;;
-  crayclang) OMPFLAG="-fopenmp" ; FOMPFLAG="-homp" ;;
+  crayclang) OMPFLAG="-fopenmp" ;;
   aocc)  OMPFLAG="-fopenmp" ;;
+  allinea) OMPFLAG="-fopenmp" ;;
+esac
+case "$compiler" in
+  crayclang) FOMPFLAG="-homp" ;;
 esac
 case "$compiler" in
   cray) C99FLAG="-hstd=c99" ;;
@@ -295,17 +364,23 @@ case "$compiler" in
     ;;
   aocc)
   # AOCC is rather conservative at the moment.
-    FFLAGS="-O2"
-    CFLAGS="-O3"
+    FFLAGS="-O3 -ffast-math"
+    CFLAGS="-O3 -ffast-math"
     PE_LIBS="-lm"
+    ;;
+  allinea)
+    FFLAGS="-O3 -ffast-math"
+    CFLAGS="$FFLAGS"
     ;;
 esac                            # %{compiler}
 
-if test $make_shared; then
-    FFLAGS="$FFLAGS $PICFLAG"
-    CFLAGS="$CFLAGS $PICFLAG"
-    CXXFLAGS="$PICFLAG"
+if test $make_shared -eq 1 ; then
+    printf "Requested shared library\n"
 fi
+# Always set PIC
+FFLAGS="$FFLAGS $PICFLAG"
+CFLAGS="$CFLAGS $PICFLAG"
+CXXFLAGS="$PICFLAG"
 
 if test $make_openmp -eq 1 ; then
   printf "Using OpenMP\n"

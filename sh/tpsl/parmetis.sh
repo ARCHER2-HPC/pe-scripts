@@ -58,7 +58,7 @@ patch -p1 <<'EOF'
  add_library(parmetis ${ParMETIS_LIBRARY_TYPE} ${parmetis_sources})
  # Link with metis and MPI libraries.
 -target_link_libraries(parmetis metis ${MPI_LIBRARIES})
-+target_link_libraries(parmetis "-L${METIS_PATH}/lib" metis m ${MPI_LIBRARIES})
++target_link_libraries(parmetis "-L${METIS_PATH}/lib" metis ${MPI_LIBRARIES} m)
  set_target_properties(parmetis PROPERTIES LINK_FLAGS "${MPI_LINK_FLAGS}")
  
  install(TARGETS parmetis
@@ -69,7 +69,7 @@ if test ${make_using_modules} -eq 1; then
     # module metis defines METIS_DIR
     conf_metis_path="metis_path=${METIS_DIR}"
     # also get rid of "-L${METIS_PATH}/lib metis m" from second patch
-    sed -i 's%"-L\${METIS_PATH}/lib" metis m%%' ./libparmetis/CMakeLists.txt
+    sed -i 's%"-L\${METIS_PATH}/lib" metis%%' ./libparmetis/CMakeLists.txt
 else
     # metis_path="$prefix" \
     conf_metis_path="metis_path=${prefix}"

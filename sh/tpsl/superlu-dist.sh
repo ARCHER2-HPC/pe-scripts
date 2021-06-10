@@ -2,12 +2,15 @@
 #
 # Build and install the Superlu_DIST library.
 #
-# Copyright 2019, 2020 Cray, Inc.
+# Copyright 2019, 2020, 2021 Hewlett Packard Enterprise Development LP.
 ####
 
 PACKAGE=superlu-dist
-VERSION=6.1.1
-SHA256SUM=35d25cff592c724439870444ed45e1d1d15ca2c65f02ccd4b83a6d3c9d220bd1
+VERSIONS="
+  6.1.1:35d25cff592c724439870444ed45e1d1d15ca2c65f02ccd4b83a6d3c9d220bd1
+  6.3.1:3787c2755acd6aadbb4d9029138c293a7570a2ed228806676edcc7e1d3f5a1d3
+  6.4.0:cb9c0b2ba4c28e5ed5817718ba19ae1dd63ccd30bc44c8b8252b54f5f04a44cc
+"
 
 _pwd(){ CDPATH= cd -- $1 && pwd; }
 _dirname(){ _d=`dirname -- "$1"`;  _pwd $_d; }
@@ -34,14 +37,17 @@ EOF
 { cc -E -I$prefix/include conftest.c >/dev/null 2>&1 && rm conftest.* ; } \
   || fn_error "requires ParMETIS"
 
-test -e v${VERSION}.tar.gz \
+test -e superlu-dist-${VERSION}.tar.gz \
   || wget https://github.com/xiaoyeli/superlu_dist/archive/v${VERSION}.tar.gz \
+          -O superlu-dist-${VERSION}.tar.gz \
   || fn_error "could not download superlu-dist"
-echo "$SHA256SUM  v$VERSION.tar.gz" | sha256sum --check \
+echo "$SHA256SUM  superlu-dist-$VERSION.tar.gz" | sha256sum --check \
   || fn_error "source hash mismatch"
-tar xf v$VERSION.tar.gz \
+tar xf superlu-dist-$VERSION.tar.gz \
   || fn_error "could not untar source"
+
 cd superlu_dist-$VERSION
+
 patch -f -p1 <$top_dir/../patches/superlu-dist-omp.patch \
   || fn_error "could not patch"
 patch -f -p1 <<'EOF'
@@ -82,6 +88,12 @@ else
   tpl_parmetis_libraries="parmetis;metis"
 fi
 
+# ./CMakeLists.txt always wants to detect OpenMP unless we act...
+enable_openmp="NO"
+if test ${make_openmp} -eq 1; then
+  enable_openmp="YES"
+fi
+
 test "$?" = "0" \
   || fn_error "could not patch"
 rm -rf _build && mkdir _build && cd _build
@@ -92,10 +104,13 @@ cmake \
   -DCMAKE_C_COMPILER:STRING=cc \
   -DCMAKE_Fortran_FLAGS="$FFLAGS $FOMPFLAG" \
   -DCMAKE_C_FLAGS="$CFLAGS $C99FLAG $OMPFLAG $CPPFLAGS" \
-  -DOpenMP_CXX_FLAGS="$OMPFLAG" \
-  -DBUILD_SHARED_LIBS=OFF \
+  -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
+  -DOpenMP_CXX_FLAGS="$OMPFLAG $CXXFLAGS" \
+  -Denable_openmp:BOOL=${enable_openmp} \
+  -DBUILD_SHARED_LIBS:BOOL=OFF \
   -DCMAKE_EXE_LINKER_FLAGS:STRING="$LDFLAGS $OMPFLAG -L$prefix/lib" \
   -DTPL_ENABLE_BLASLIB:BOOL=YES \
+  -DTPL_BLAS_LIBRARIES="" \
   -DBLAS_FOUND:BOOL=YES \
   -DTPL_ENABLE_LAPACKLIB:BOOL=YES \
   -DTPL_LAPACK_LIBRARIES="" \

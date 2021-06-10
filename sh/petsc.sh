@@ -2,7 +2,7 @@
 #
 # Build and install the PETSc library.
 #
-# Copyright 2019, 2020 Cray, Inc.
+# Copyright 2019, 2020, 2021 Hewlett Packard Enterprise Development LP.
 ####
 
 PACKAGE=petsc
@@ -11,7 +11,8 @@ VERSIONS='
   3.10.5:6fa0574aebc6e6cb4eea206ef9a3a6037e20e8b54ca91346628a37f79af1407f
   3.11.4:006177b4059cd40310a3e9a4bf475f3a8c276b62d8cca4df272ef88bdfc2f83a
   3.12.5:b4e9aae06b1a343bc5a7fee975f391e7dbc7086fccc684068b5e0204ffa3ecad
-  3.13.3:dc744895ee6b9c4491ff817bef0d3abd680c5e3c25e601be44240ce65ab4f337
+  3.13.6:67ca2cf3040d08fdc51d27f660ea3157732b24c2f47aae1b19d63f62a39842c2
+  3.14.2:87a04fd05cac20a2ec47094b7d18b96e0651257d8c768ced2ef7db270ecfb9cb
 '
 
 _pwd(){ CDPATH= cd -- $1 && pwd; }
@@ -44,7 +45,7 @@ fn_check_link()
 int $2();
 int main(){ $2(); }
 EOF
-  { cc -L$prefix/lib conftest.c -ldl >/dev/null 2>&1 && rm conftest.* ; } \
+  { cc -L$prefix/lib $LDFLAGS conftest.c $LIBS >/dev/null 2>&1 && rm conftest.* ; } \
     || fn_error "requires $1"
 }
 
@@ -60,8 +61,8 @@ fn_check_includes SuperLU slu_ddefs.h
 fn_check_includes SuperLU_DIST superlu_dist_config.h
 fn_check_includes PT-Scotch ptscotch.h
 fn_check_includes MUMPS mumps_c_types.h
-# Note HYPRE and Sundials are not actually used at present...
-#fn_check_includes HYPRE HYPRE.h
+# Note Sundials is not actually used at present...
+fn_check_includes HYPRE HYPRE.h
 #fn_check_includes SUNDIALS sundials/sundials_types.h
 fn_check_includes HDF5 hdf5.h
 
@@ -132,6 +133,7 @@ if test ${make_using_modules} -eq 1; then
   conf_with_mumps_lib="${MUMPS_EXTRA_LIBS}"
   conf_with_superlu_dir=""
   conf_with_superlu_dist_dir=""
+  conf_with_hypre_dir=""
 else
   conf_with_metis_dir="--with-metis-dir=${prefix}"
   conf_with_ptscotch_include="${prefix}/include"
@@ -140,6 +142,7 @@ else
   conf_with_mumps_lib="-L${prefix}/lib -lcmumps -ldmumps -lesmumps -lsmumps -lzmumps -lmumps_common -lptesmumps -lesmumps -lpord ${MUMPS_EXTRA_LIBS}"
   conf_with_superlu_dir="--with-superlu-dir=${prefix}"
   conf_with_superlu_dist_dir="--with-superlu_dist-dir=${prefix}"
+  conf_with_hypre_dir="--with-hypre-dir=${prefix}"
 fi
 
 cat >configure-petsc.sh <<EOF
@@ -178,9 +181,8 @@ exec ./configure \\
   --with-debugging=0 \\
   --with-dependencies=0 \\
   --with-fc=ftn \\
-  --with-fortran-datatypes=0 \\
-  --with-fortran-interfaces=0 \\
-  --with-fortranlib-autodetect=0 \\
+  --with-fortran-bindings=1 \\
+  --with-fortranlib-autodetect=1 \\
   --with-ranlib=ranlib \\
   --with-scalar-type=real \\
   --with-shared-ld=ar \\
@@ -199,6 +201,8 @@ exec ./configure \\
   --with-parmetis=1 \\
   --with-metis=1 \\
   ${conf_with_metis_dir} \\
+  --with-hypre=1 \\
+  ${conf_with_hypre_dir} \\
   --with-scalapack=1 \\
   --with-ptscotch=1 \\
   --with-ptscotch-include="${conf_with_ptscotch_include}" \\

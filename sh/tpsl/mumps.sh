@@ -2,13 +2,14 @@
 #
 # Build and install the MUMPS library.
 #
-# Copyright 2019, 2020 Cray, Inc.
+# Copyright 2019, 2020, 2021 Hewlett Packard Enterprise Development LP.
 ####
 
 PACKAGE=mumps
 VERSIONS='
   5.1.2:eb345cda145da9aea01b851d17e54e7eef08e16bfa148100ac1f7f046cd42ae9
   5.2.1:d988fc34dfc8f5eee0533e361052a972aa69cc39ab193e7f987178d24981744a
+  5.3.5:e5d665fdb7043043f0799ae3dbe3b37e5b200d1ab7a6f7b2a4e463fd89507fa4
 '
 
 _pwd(){ CDPATH= cd -- $1 && pwd; }
@@ -16,6 +17,13 @@ _dirname(){ _d=`dirname -- "$1"`;  _pwd $_d; }
 top_dir=`_dirname \`_dirname "$0"\``
 
 . $top_dir/.preamble.sh
+
+case "$compiler:$GCC_VERSION" in
+  gnu:10.*)
+    # See https://listes.ens-lyon.fr/sympa/arc/mumps-users/2020-05/msg00006.html
+    FFLAGS="-fallow-argument-mismatch $FFLAGS"
+    ;;
+esac
 
 ##
 ## Requirements:
@@ -58,8 +66,9 @@ else
 fi
 # Cannot build precision libraries in parallel due to shared
 # dependency on ana_ordering_wrappers object, leading to race
-# condition.
-sed 's/^c:/.NOTPARALLEL: c z s d\n&/' -i Makefile \
+# condition.  This was fixed in release 5.3.5.
+fn_versgte $VERSION 5.3.5 \
+  || sed 's/^c:/.NOTPARALLEL: c z s d\n&/' -i Makefile \
   || fn_error "could not patch Makefile"
 cat >Makefile.inc <<EOF
 LPORDDIR = \$(topdir)/PORD/lib/
