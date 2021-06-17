@@ -46,6 +46,12 @@ esac
 case "$compiler" in
   crayclang)
     CXXFLAGS="-Wno-implicit-int-float-conversion $CXXFLAGS" ;;
+  aocc)
+    # AAOC 2.1 cannot use this (not recognised option)
+    # AOCC 2.2 must use this to compile with -Werror -Weverything
+    case "${CRAY_AOCC_VERSION}" in
+      2.2*) CXXFLAGS="-Wno-implicit-int-float-conversion $CXXFLAGS" ;;
+    esac
 esac
 
 cmake \
