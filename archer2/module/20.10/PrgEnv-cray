@@ -1,0 +1,17 @@
+module use --append /usr/local/Modules/modulefiles
+module use --append /opt/cray/pe/cpe-prgenv/7.0.0/modules
+module use --append /opt/cray/pe/modulefiles
+module use --append /opt/cray/pe/craype-targets/default/modulefiles
+module use --append /opt/modulefiles
+module use --append /opt/cray/modulefiles
+module load cpe-cray
+module load cce/10.0.4
+module load craype/2.7.2
+module load craype-x86-rome
+module load --notuasked libfabric
+module load craype-network-ofi
+module load cray-dsmml/0.1.2
+module load perftools-base/20.10.0
+module load xpmem/2.2.35-7.0.1.0_1.9__gd50fabf.shasta
+module load cray-mpich/8.0.16
+module load cray-libsci/20.10.1.2
