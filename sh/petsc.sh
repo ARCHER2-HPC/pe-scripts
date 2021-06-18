@@ -11,6 +11,7 @@ VERSIONS='
   3.10.5:6fa0574aebc6e6cb4eea206ef9a3a6037e20e8b54ca91346628a37f79af1407f
   3.11.4:006177b4059cd40310a3e9a4bf475f3a8c276b62d8cca4df272ef88bdfc2f83a
   3.12.5:b4e9aae06b1a343bc5a7fee975f391e7dbc7086fccc684068b5e0204ffa3ecad
+  3.13.3:dc744895ee6b9c4491ff817bef0d3abd680c5e3c25e601be44240ce65ab4f337
   3.13.6:67ca2cf3040d08fdc51d27f660ea3157732b24c2f47aae1b19d63f62a39842c2
   3.14.2:87a04fd05cac20a2ec47094b7d18b96e0651257d8c768ced2ef7db270ecfb9cb
 '
@@ -181,8 +182,10 @@ exec ./configure \\
   --with-debugging=0 \\
   --with-dependencies=0 \\
   --with-fc=ftn \\
+  --with-fortran-datatypes=1 \\
+  --with-fortran-interfaces=1 \\
   --with-fortran-bindings=1 \\
-  --with-fortranlib-autodetect=1 \\
+  --with-fortranlib-autodetect=0 \\
   --with-ranlib=ranlib \\
   --with-scalar-type=real \\
   --with-shared-ld=ar \\
