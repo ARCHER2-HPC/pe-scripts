@@ -55,22 +55,28 @@ tar xf arpack-ng-$VERSION.tar.gz \
 cd arpack-ng-$VERSION
 
 
-# Patches
+# Patches required
 
-patches="
-  arpack-ng-debug.h.patch
-  arpack-ng-stat.h.patch
-  arpack-ng-CMakeLists.txt.patch
-  arpack-ng-bug-1315-single.c.patch
-"
-
-# debug.h
-# stat.h
-# have non-conforming (to f77) continuation lines which must be fixed
+case "${compiler}" in
+    aocc)
+	# f77 requires fixed-form debug.h for relevant.f
+	# f90 requires free-form  debug.h for relevant.F90
+	# ...and the twain shall not meet.
+	# So, copy the existing f90 version to separate file, and patch up
+	# the originals for f77
+	cp debug.h debug90.h
+	cp stat.h stat90.h
+	sed -i 's/debug.h/debug90.h/' ICB/debug_icb.F90
+	sed -i 's/stat.h/stat90.h/' ICB/stat_icb.F90
+	patches="arpack-ng-debug.h.patch arpack-ng-stat.h.patch"
+	;;
+esac
 
 # CMakeLists.txt
 # - hardwires "mpirun" - replace by ${MPIEXEC_EXECUTABLE}
 # - add_test(issue46 ...) misses parallel launch which is required
+
+patches="${patches} arpack-ng-CMakeLists.txt.patch"
 
 # TESTS/bug_1315_single.c
 # - has a hardwired tolerance marginally too tight
