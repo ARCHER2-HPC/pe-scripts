@@ -17,7 +17,8 @@ source ${module_root}/archer-pkgconfig-tcl.lib
 conflict superlu-dist
 
 proc ModulesHelp { } {
-  puts stderr "SuperLU_DIST version $::superlu_dist_version"
+  set version $::superlu_dist_version
+  puts stderr "SuperLU_DIST version $version"
   puts stderr "See https://docs.archer2.ac.uk/software-libraries/superlu/"
   puts stderr "Installed by: Kevin Stratford, EPCC"
   puts stderr "Date: TEMPLATE_TIMESTAMP\n"

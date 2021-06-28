@@ -16,10 +16,9 @@ function main {
 
     local install_root=${prefix}/libs/glm/${GLM_VERSION}
 
-    glmBuildAocc ${install_root}
     glmBuildCray ${install_root}
-    glmBuildGnu  ${install_root} "9.3.0"
-    glmBuildGnu  ${install_root} "10.1.0"
+    glmBuildGnu  ${install_root}
+    glmBuildAocc ${install_root}
     
     glmInstallModuleFile 
     glmInstallationTest
@@ -29,12 +28,13 @@ function main {
 function glmBuildAocc {
 
     local install_root=${1}
-    
-    # buildVersion AOCC 2.1
-    module -s restore PrgEnv-aocc
+
+    # Restore PE/Compiler
+    module restore $(moduleCollection PrgEnv-aocc)
+    module swap aocc aocc/${PE_AOCC_AOCC_VERSION}
     module list
 
-    amd_version=2.1
+    amd_version=$(moduleToCompilerMajorMinor)
     amd_root=${install_root}/AOCC
     amd_prefix=${amd_root}/${amd_version}
 
@@ -45,11 +45,11 @@ function glmBuildCray {
 
     local install_root=${1}
 
-    # buildVersion CRAYCLANG 10.0
-    module -s restore PrgEnv-cray
+    module restore $(moduleCollection PrgEnv-cray)
+    module swap cce cce/${PE_CRAY_CCE_VERSION}
     module list
 
-    cray_version=10.0
+    cray_version=$(moduleToCompilerMajorMinor)
     cray_root=${install_root}/CRAYCLANG
     cray_prefix=${cray_root}/${cray_version}
 
@@ -59,16 +59,12 @@ function glmBuildCray {
 function glmBuildGnu {    
 
     local install_root=${1}
-    local gcc_version=${2}
 
-    module -s restore PrgEnv-gnu
-    module swap gcc gcc/${gcc_version}
+    module restore $(moduleCollection PrgEnv-gnu)
+    module swap gcc gcc/${PE_GNU_GCC_VERSION}
     module list
 
-    # Directory name is just "major.minor" version
-    IFS="." read -r -a mmp <<< "${gcc_version}"
-    gnu_version="${mmp[0]}.${mmp[1]}"
-
+    gnu_version=$(moduleToCompilerMajorMinor)
     gnu_root=${install_root}/GNU
     gnu_prefix=${gnu_root}/${gnu_version}
 
@@ -142,7 +138,7 @@ function glmTest {
     local version=${GLM_VERSION}
 
     printf "GLM test for %s\n" "${prgenv}"
-    module -s restore ${prgenv}
+    module restore $(moduleCollection ${prgenv})
     module use ${module_use}
 
     module load glm/${version}

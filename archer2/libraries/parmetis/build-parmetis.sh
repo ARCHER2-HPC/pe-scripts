@@ -27,15 +27,16 @@ function main {
 function parmetisBuildAocc {
 
     local install_root=${1}
-    
-    # buildVersion AOCC 2.1
-    module -s restore PrgEnv-aocc
+
+    # Restore relevant PE/Compiler
+    module restore $(moduleCollection PrgEnv-aocc)
+    module swap aocc aocc/${PE_AOCC_AOCC_VERSION}
 
     moduleUseLibs
     module load metis/${METIS_VERSION}
     module list
 
-    amd_version=2.1
+    amd_version=$(moduleToCompilerMajorMinor)
     amd_root=${install_root}/AOCC
     amd_prefix=${amd_root}/${amd_version}
 
@@ -46,14 +47,14 @@ function parmetisBuildCray {
 
     local install_root=${1}
 
-    # buildVersion CRAYCLANG 10.0
-    module -s restore PrgEnv-cray
+    module restore $(moduleCollection PrgEnv-cray)
+    module swap cce cce/${PE_CRAY_CCE_VERSION}
 
     moduleUseLibs
     module load metis/${METIS_VERSION}
     module list
 
-    cray_version=10.0
+    cray_version=$(moduleToCompilerMajorMinor)
     cray_root=${install_root}/CRAYCLANG
     cray_prefix=${cray_root}/${cray_version}
 
@@ -64,15 +65,14 @@ function parmetisBuildGnu {
 
     local install_root=${1}
 
-    # buildVersion GNU 9.3
-    module -s restore PrgEnv-gnu
-    module swap gcc gcc/9.3.0
+    module restore $(moduleCollection PrgEnv-gnu)
+    module swap gcc gcc/${PE_GNU_GCC_VERSION}
 
     moduleUseLibs
     module load metis/${METIS_VERSION}
     module list
 
-    gnu_version=9.3
+    gnu_version=$(moduleToCompilerMajorMinor)
     gnu_root=${install_root}/GNU
     gnu_prefix=${gnu_root}/${gnu_version}
 
@@ -126,7 +126,8 @@ function parmetisBuildMPIOpenMP {
     local pe=$(peEnvLower)
     local newname=libparmetis_${pe}_mpi_mp.a
 
-    ./sh/tpsl/parmetis.sh --jobs=16 --prefix=${prefix} --openmp --modules --version=${PARMETIS_VERSION}
+    ./sh/tpsl/parmetis.sh --jobs=16 --prefix=${prefix} --openmp --modules \
+			  --version=${PARMETIS_VERSION}
 
     mv ${prefix}/lib/libparmetis.a ${prefix}/lib/${newname}
     ccSharedFromStatic ${prefix}/lib parmetis_${pe}_mpi_mp
@@ -191,11 +192,11 @@ function parmetisInstallationTest {
 
 function parmetisTest {
 
-    local prgenv=${1}
+    local prgenv="${1}"
     local module_use=$(moduleInstallDirectory)
 
     printf "Parmetis test for %s\n" "${prgenv}"
-    module -s restore ${prgenv}
+    module restore $(moduleCollection ${prgenv})
     module use ${module_use}
 
     module load parmetis/${PARMETIS_VERSION}

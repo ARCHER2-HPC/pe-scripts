@@ -18,11 +18,12 @@ function main {
 
     slepcBuildCray ${install_root}
     slepcBuildGnu  ${install_root}
-    # AOCC is omitted pending availability of working PETSc
-    #slepcBuildAocc ${install_root}
+    slepcBuildAocc ${install_root}
 
     slepcInstallModuleFile
     slepcInstallationTest
+
+    printf "ARCHER2: successful installation and test of SLEPc\n"
 }
 
 function slepcLoadModuleDependencies {
@@ -36,13 +37,13 @@ function slepcBuildAocc {
 
     local install_root=${1}
     
-    # buildVersion AOCC 2.1
-    module -s restore PrgEnv-aocc
+    module restore $(moduleCollection PrgEnv-aocc)
+    module swap aocc aocc/${PE_AOCC_AOCC_VERSION}
 
     slepcLoadModuleDependencies
     module list
 
-    amd_version=2.1
+    amd_version=$(moduleToCompilerMajorMinor)
     amd_root=${install_root}/AOCC
     amd_prefix=${amd_root}/${amd_version}
 
@@ -53,13 +54,13 @@ function slepcBuildCray {
 
     local install_root=${1}
 
-    # buildVersion CRAYCLANG 10.0
-    module -s restore PrgEnv-cray
+    module restore $(moduleCollection PrgEnv-cray)
+    module swap cce cce/${PE_CRAY_CCE_VERSION}
 
     slepcLoadModuleDependencies
     module list
 
-    cray_version=10.0
+    cray_version=$(moduleToCompilerMajorMinor)
     cray_root=${install_root}/CRAYCLANG
     cray_prefix=${cray_root}/${cray_version}
 
@@ -76,14 +77,13 @@ function slepcBuildGnu {
 
     local install_root=${1}
 
-    # buildVersion GNU 9.3
-    module -s restore PrgEnv-gnu
-    module swap gcc gcc/9.3.0
+    module restore $(moduleCollection PrgEnv-gnu)
+    module swap gcc gcc/${PE_GNU_GCC_VERSION}
 
     slepcLoadModuleDependencies
     module list
 
-    gnu_version=9.3
+    gnu_version=$(moduleToCompilerMajorMinor)
     gnu_root=${install_root}/GNU
     gnu_prefix=${gnu_root}/${gnu_version}
 
@@ -95,7 +95,7 @@ function slepcBuild {
     local prefix=${1}
     
     slepcClean
-    slepcBuildMPIOpenMP ${prefix}
+    slepcBuildMPI ${prefix}
 
     slepcPackageConfigFiles "${prefix}"
     # Remove temp shared object used only for pkgconfig step
@@ -108,14 +108,14 @@ function slepcClean {
 
 }
 
-function slepcBuildMPIOpenMP {
+function slepcBuildMPI {
 
     # Build produces libslepc.a
 
     local prefix=${1}
     local pe=$(peEnvLower)
 
-    ./sh/slepc.sh --jobs=16 --prefix=${prefix} --openmp --modules \
+    ./sh/slepc.sh --jobs=16 --prefix=${prefix} --modules \
 		  --version=${SLEPC_VERSION}
 
     # The pkgconfig integration will look for slepc_crayclang_mpi
@@ -149,9 +149,10 @@ function slepcPackageConfigFiles {
 
     pcmap[requires]="slepc_${ext}"
 
-    # SLEPC produces its own "SLEPc.pc" which we will remove
+    # SLEPC produces its own "SLEPc.pc" or "slepc.pc" which we will remove
     # as it will fail looking for "PETSc"
-    rm ${prefix}/lib/pkgconfig/SLEPc.pc
+    rm -f ${prefix}/lib/pkgconfig/slepc.pc
+    rm -f ${prefix}/lib/pkgconfig/SLEPc.pc
 
     pcRefactorPackageConfigFiles ${prefix} pcmap
     pcFileWriteOverallPackageFile "${prefix}/lib/pkgconfig/slepc.pc" pcmap
@@ -188,9 +189,7 @@ function slepcInstallationTest {
 
     slepcTest PrgEnv-cray
     slepcTest PrgEnv-gnu
-
-    # AOCC not working. Link fails to complete in any reasonable time.
-    # slepcTest PrgEnv-aocc
+    slepcTest PrgEnv-aocc
 }
 
 function slepcTest {
@@ -199,7 +198,7 @@ function slepcTest {
     local module_use=$(moduleInstallDirectory)
 
     printf "Slepc test for %s\n" "${prgenv}"
-    module -s restore ${prgenv}
+    module restore $(moduleCollection ${prgenv})
     module use ${module_use}
 
     module load slepc/${SLEPC_VERSION}

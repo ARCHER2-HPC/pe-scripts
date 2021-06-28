@@ -102,7 +102,7 @@ if { ! [ info exists env(PE_ENV) ] } {
 
     # load or remove paths
     if { ! [ module-info mode remove ] } {
-      prepend-path PATH $product_curpath/lib
+      prepend-path PATH $product_curpath/bin
     } else {
       set oldpath $env(PATH)
       foreach mod [ split $oldpath ':' ] {

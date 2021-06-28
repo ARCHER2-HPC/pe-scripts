@@ -23,18 +23,19 @@ function main {
     scotchInstallModuleFile
     scotchInstallationTest ${install_root}
 
-    printf "Scotch nstallation test completed successfully\n"
+    printf "ARCHER2: Scotch installation test completed successfully\n"
 }
 
 function scotchBuildAocc {
 
     local install_root=${1}
     
-    # buildVersion AOCC 2.1
-    module -s restore PrgEnv-aocc
+    # Restore relevant PE/Compiler
+    module restore $(moduleCollection PrgEnv-aocc)
+    module swap aocc aocc/${PE_AOCC_AOCC_VERSION}
     module list
 
-    amd_version=2.1
+    amd_version=$(moduleToCompilerMajorMinor)
     amd_root=${install_root}/AOCC
     amd_prefix=${amd_root}/${amd_version}
 
@@ -45,11 +46,11 @@ function scotchBuildCray {
 
     local install_root=${1}
 
-    # buildVersion CRAYCLANG 10.0
-    module -s restore PrgEnv-cray
+    module restore $(moduleCollection PrgEnv-cray)
+    module swap cce cce/${PE_CRAY_CCE_VERSION}
     module list
 
-    cray_version=10.0
+    cray_version=$(moduleToCompilerMajorMinor)
     cray_root=${install_root}/CRAYCLANG
     cray_prefix=${cray_root}/${cray_version}
 
@@ -60,12 +61,11 @@ function scotchBuildGnu {
 
     local install_root=${1}
 
-    # buildVersion GNU 9.3
-    module -s restore PrgEnv-gnu
-    module swap gcc gcc/9.3.0
+    module restore $(moduleCollection PrgEnv-gnu)
+    module swap gcc gcc/${PE_GNU_GCC_VERSION}
     module list
 
-    gnu_version=9.3
+    gnu_version=$(moduleToCompilerMajorMinor)
     gnu_root=${install_root}/GNU
     gnu_prefix=${gnu_root}/${gnu_version}
 
@@ -197,7 +197,7 @@ function scotchTest {
     local version="${SCOTCH_VERSION}"
 
     printf "Scotch test for %s\n" "${prgenv}"
-    module -s restore ${prgenv}
+    module restore $(moduleCollection ${prgenv})
     module use ${module_use}
 
     module load scotch/${version}

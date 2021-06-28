@@ -23,13 +23,13 @@ function main {
     adiosInstallModuleFile
     adiosInstallationTest
 
-    printf "Installation test of adios successful\n"
+    printf "ARCHER2: Installation test of adios successful\n"
 }
 
 function adiosLoadModuleDependencies {
 
     moduleUseLibs
-    module load cray-hdf5-parallel
+    module load cray-hdf5-parallel/${CRAY_HDF5_PARALLEL_VERSION}
 
 }
 
@@ -37,13 +37,14 @@ function adiosBuildAocc {
 
     local install_root=${1}
     
-    # buildVersion AOCC 2.1
-    module -s restore PrgEnv-aocc
+    # restore pe/compiler
+    module restore $(moduleCollection PrgEnv-aocc)
+    module swap aocc aocc/${PE_AOCC_AOCC_VERSION}
 
     adiosLoadModuleDependencies
     module list
 
-    amd_version=2.1
+    amd_version=$(moduleToCompilerMajorMinor)
     amd_root=${install_root}/AOCC
     amd_prefix=${amd_root}/${amd_version}
 
@@ -54,13 +55,13 @@ function adiosBuildCray {
 
     local install_root=${1}
 
-    # buildVersion CRAYCLANG 10.0
-    module -s restore PrgEnv-cray
+    module restore $(moduleCollection PrgEnv-cray)
+    module swap cce cce/${PE_CRAY_CCE_VERSION}
 
     adiosLoadModuleDependencies
     module list
 
-    cray_version=10.0
+    cray_version=$(moduleToCompilerMajorMinor)
     cray_root=${install_root}/CRAYCLANG
     cray_prefix=${cray_root}/${cray_version}
 
@@ -71,14 +72,13 @@ function adiosBuildGnu {
 
     local install_root=${1}
 
-    # buildVersion GNU 9.3
-    module -s restore PrgEnv-gnu
-    module swap gcc gcc/9.3.0
+    module restore $(moduleCollection PrgEnv-gnu)
+    module swap gcc gcc/${PE_GNU_GCC_VERSION}
 
     adiosLoadModuleDependencies
     module list
 
-    gnu_version=9.3
+    gnu_version=$(moduleToCompilerMajorMinor)
     gnu_root=${install_root}/GNU
     gnu_prefix=${gnu_root}/${gnu_version}
 
@@ -153,7 +153,7 @@ function adiosTest {
     local module_use=$(moduleInstallDirectory)
 
     printf "Adios test for %s\n" "${prgenv}"
-    module -s restore ${prgenv}
+    module restore $(moduleCollection ${prgenv})
     module use ${module_use}
 
     module load adios/${ADIOS_VERSION}

@@ -32,11 +32,13 @@ function metisBuildAocc {
 
     local install_root=${1}
     
-    # buildVersion AOCC 2.1
-    module -s restore PrgEnv-aocc
+    # restore modules
+    module restore $(moduleCollection PrgEnv-aocc)
+    module swap aocc aocc/${PE_AOCC_AOCC_VERSION}
     module list
 
-    amd_version=2.1
+    # use currently loaded compiler
+    amd_version=$(moduleToCompilerMajorMinor)
     amd_root=${install_root}/AOCC
     amd_prefix=${amd_root}/${amd_version}
 
@@ -47,11 +49,11 @@ function metisBuildCray {
 
     local install_root=${1}
 
-    # buildVersion CRAYCLANG 10.0
-    module -s restore PrgEnv-cray
+    module restore $(moduleCollection PrgEnv-cray)
+    module swap cce cce/${PE_CRAY_CCE_VERSION}
     module list
 
-    cray_version=10.0
+    cray_version=$(moduleToCompilerMajorMinor)
     cray_root=${install_root}/CRAYCLANG
     cray_prefix=${cray_root}/${cray_version}
 
@@ -62,12 +64,11 @@ function metisBuildGnu {
 
     local install_root=${1}
 
-    # buildVersion GNU 9.3
-    module -s restore PrgEnv-gnu
-    module swap gcc gcc/9.3.0
+    module restore $(moduleCollection PrgEnv-gnu)
+    module swap gcc gcc/${PE_GNU_GCC_VERSION}
     module list
 
-    gnu_version=9.3
+    gnu_version=$(moduleToCompilerMajorMinor)
     gnu_root=${install_root}/GNU
     gnu_prefix=${gnu_root}/${gnu_version}
 
@@ -88,7 +89,6 @@ function metisBuild {
 
     # Remove shared objects here
     rm ${prefix}/lib/lib*.so
-
 }
 
 function metisClean {
@@ -99,18 +99,20 @@ function metisClean {
 
 function metisBuildSerial {
 
+    # libmetis.so is generated
     # libmetis.a is generated
 
     local prefix=${1}
     printf "Build metis with prefix %s\n" "${prefix}"
 
+    local pe=$(peEnvLower)
+    local newname=libmetis_${pe}
+
     ./sh/tpsl/metis.sh --jobs=16 --prefix=${prefix} --version=${METIS_VERSION}
 
-    local pe=$(peEnvLower)
-    local newname=libmetis_${pe}.a
+    mv ${prefix}/lib/libmetis.a ${prefix}/lib/${newname}.a
 
-    mv ${prefix}/lib/libmetis.a ${prefix}/lib/${newname}
-    ccSharedFromStatic ${prefix}/lib metis_${pe}
+    ccSharedFromStatic ${prefix}/lib "metis_${pe}"
 }
 
 function metisBuildOpenMP {
@@ -121,11 +123,13 @@ function metisBuildOpenMP {
     printf "Build metis OpenMP with prefix %s\n" "${prefix}"
 
     local pe=$(peEnvLower)
-    local newname=libmetis_${pe}_mp.a
+    local newname=libmetis_${pe}_mp
 
-    ./sh/tpsl/metis.sh --jobs=16 --prefix=${prefix} --openmp --version=${METIS_VERSION}
-    mv ${prefix}/lib/libmetis.a ${prefix}/lib/${newname}
-    ccSharedFromStatic ${prefix}/lib metis_${pe}_mp
+    ./sh/tpsl/metis.sh --jobs=16 --prefix=${prefix} --openmp \
+		       --version=${METIS_VERSION}
+    mv ${prefix}/lib/libmetis.a ${prefix}/lib/${newname}.a
+
+    ccSharedFromStatic ${prefix}/lib "metis_${pe}_mp"
 }
 
 function metisPackageConfigFiles {
@@ -152,6 +156,8 @@ function metisPackageConfigFiles {
 
     pcRefactorPackageConfigFiles ${prefix} pcmap
     pcFileWriteOverallPackageFile "${prefix}/lib/pkgconfig/metis.pc" pcmap
+
+
 }
 
 function metisInstallModuleFile {
@@ -190,13 +196,13 @@ function metisInstallationTest {
 
 function metisTest {
 
-    local prgenv=${1}
+    local prgenv="${1}"
     local module_use=$(moduleInstallDirectory)
     local graph_dir="graphs" # standard metis inputs
 
     printf "Metis installation test for %s\n" "${prgenv}"
 
-    module -s restore ${prgenv}
+    module restore $(moduleCollection ${prgenv})
     module use ${module_use}
 
     module load metis/${METIS_VERSION}

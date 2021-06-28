@@ -8,6 +8,7 @@ set module_root ${shared_root}/archer2-modules
 
 set hdf5_parallel_version TEMPLATE_HDF5PARALLEL_VERSION
 set parmetis_version TEMPLATE_PARMETIS_VERSION
+set hypre_version TEMPLATE_HYPRE_VERSION
 set scotch_version   TEMPLATE_SCOTCH_VERSION
 set mumps_version TEMPLATE_MUMPS_VERSION
 set superlu_version  TEMPLATE_SUPERLU_VERSION
@@ -39,6 +40,7 @@ if { ! [ info exists env(PE_ENV) ] } {
 
   module load cray-hdf5-parallel/${hdf5_parallel_version}
   module load parmetis/${parmetis_version}
+  module load hypre/${hypre_version}
   module load scotch/${scotch_version}
   module load mumps/${mumps_version}
   module load superlu/${superlu_version}
