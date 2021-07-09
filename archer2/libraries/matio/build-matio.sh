@@ -16,9 +16,9 @@ function main {
 
     local install_root=${prefix}/libs/matio/${MATIO_VERSION}
 
-    matioBuildAocc ${install_root}
-    matioBuildCray ${install_root}
-    matioBuildGnu  ${install_root}
+    ${build_amd} && matioBuildAocc ${install_root}
+    ${build_cce} && matioBuildCray ${install_root}
+    ${build_gnu} && matioBuildGnu  ${install_root}
 
     matioInstallModuleFile
     matioInstallationTest
@@ -128,9 +128,9 @@ function matioInstallModuleFile {
 
 function matioInstallationTest {
 
-    matioTest PrgEnv-cray
-    matioTest PrgEnv-gnu
-    matioTest PrgEnv-aocc
+    ${test_cce} && matioTest PrgEnv-cray
+    ${test_gnu} && matioTest PrgEnv-gnu
+    ${test_amd} && matioTest PrgEnv-aocc
 }
 
 function matioTest {
@@ -158,6 +158,7 @@ function matioTest {
     ./example-test
 
     cd -
+    module unload matio
 }
 
 main

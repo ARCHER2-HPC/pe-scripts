@@ -16,9 +16,9 @@ function main {
 
     local install_root=${prefix}/libs/scotch/${SCOTCH_VERSION}
 
-    scotchBuildAocc ${install_root}
-    scotchBuildCray ${install_root}
-    scotchBuildGnu  ${install_root}
+    ${build_amd} && scotchBuildAocc ${install_root}
+    ${build_cce} && scotchBuildCray ${install_root}
+    ${build_gnu} && scotchBuildGnu  ${install_root}
     
     scotchInstallModuleFile
     scotchInstallationTest ${install_root}
@@ -184,9 +184,9 @@ function scotchInstallModuleFile {
 
 function scotchInstallationTest {
 
-    scotchTest PrgEnv-cray
-    scotchTest PrgEnv-gnu
-    scotchTest PrgEnv-aocc
+    ${test_cee} && scotchTest PrgEnv-cray
+    ${test_gnu} && scotchTest PrgEnv-gnu
+    ${test_amd} && scotchTest PrgEnv-aocc
 
 }
 
@@ -230,6 +230,9 @@ function scotchTest {
     slurmAllocRun "make ptcheck"
 
     cd -
+    module unload scotch
 }
 
 main
+
+return 0

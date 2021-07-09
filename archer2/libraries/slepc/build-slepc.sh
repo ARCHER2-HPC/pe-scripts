@@ -16,9 +16,9 @@ function main {
 
     local install_root=${prefix}/libs/slepc/${SLEPC_VERSION}
 
-    slepcBuildCray ${install_root}
-    slepcBuildGnu  ${install_root}
-    slepcBuildAocc ${install_root}
+    ${build_cce} && slepcBuildCray ${install_root}
+    ${build_gnu} && slepcBuildGnu  ${install_root}
+    ${build_amd} && slepcBuildAocc ${install_root}
 
     slepcInstallModuleFile
     slepcInstallationTest
@@ -187,9 +187,9 @@ function slepcInstallModuleFile {
 
 function slepcInstallationTest {
 
-    slepcTest PrgEnv-cray
-    slepcTest PrgEnv-gnu
-    slepcTest PrgEnv-aocc
+    ${test_cce} && slepcTest PrgEnv-cray
+    ${test_gnu} && slepcTest PrgEnv-gnu
+    ${test_amd} && slepcTest PrgEnv-aocc
 }
 
 function slepcTest {
@@ -212,6 +212,7 @@ function slepcTest {
                    PETSC_ARCH= check"
 
     cd -
+    module unload slepc
 }
 
 main

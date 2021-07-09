@@ -16,13 +16,14 @@ function main {
 
     local install_root=${prefix}/libs/glm/${GLM_VERSION}
 
-    glmBuildCray ${install_root}
-    glmBuildGnu  ${install_root}
-    glmBuildAocc ${install_root}
+    ${build_cce} && glmBuildCray ${install_root}
+    ${build_gnu} && glmBuildGnu  ${install_root}
+    ${build_amd} && glmBuildAocc ${install_root}
     
     glmInstallModuleFile 
     glmInstallationTest
 
+    printf "ARCHER2: glm install/test complete"
 }
 
 function glmBuildAocc {
@@ -126,9 +127,9 @@ function glmInstallModuleFile {
 
 function glmInstallationTest {
 
-    glmTest PrgEnv-cray
-    glmTest PrgEnv-gnu
-    glmTest PrgEnv-aocc
+    ${test_cce} && glmTest PrgEnv-cray
+    ${test_gnu} && glmTest PrgEnv-gnu
+    ${test_amd} && glmTest PrgEnv-aocc
 }
 
 function glmTest {
@@ -153,6 +154,7 @@ function glmTest {
     ./test
 
     cd -
+    module unload glm
 }
 
 main

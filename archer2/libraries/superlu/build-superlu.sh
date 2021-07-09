@@ -16,13 +16,13 @@ function main {
 
     local install_root=${prefix}/libs/superlu/${SUPERLU_VERSION}
 
-    superluBuildAocc ${install_root}
-    superluBuildCray ${install_root}
-    superluBuildGnu  ${install_root}
+    ${build_amd} && superluBuildAocc ${install_root}
+    ${build_cce} && superluBuildCray ${install_root}
+    ${build_gnu} && superluBuildGnu  ${install_root}
 
     superluInstallModuleFile
     superluInstallationTest
-    printf "Completed installation (and test) of superlu successfully\n"
+    printf "ARCHER2: installation (and test) of superlu successful\n"
 }
 
 function superluBuildAocc {
@@ -158,9 +158,9 @@ function superluInstallModuleFile {
 
 function superluInstallationTest {
 
-    superluTest PrgEnv-cray
-    superluTest PrgEnv-gnu
-    superluTest PrgEnv-aocc
+    ${test_cce} && superluTest PrgEnv-cray
+    ${test_gnu} && superluTest PrgEnv-gnu
+    ${test_amd} && superluTest PrgEnv-aocc
 }
 
 function superluTest {
@@ -226,6 +226,7 @@ function superluTest {
     ./zf77exm  < ../EXAMPLE/cg20.cua
 
     cd -
+    module unload superlu
 }
 
 main

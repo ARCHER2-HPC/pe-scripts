@@ -20,9 +20,9 @@ function main {
 
     local install_root=${prefix}/libs/metis/${METIS_VERSION}
 
-    metisBuildCray ${install_root}
-    metisBuildGnu  ${install_root}
-    metisBuildAocc ${install_root}
+    ${build_cce} && metisBuildCray ${install_root}
+    ${build_gnu} && metisBuildGnu  ${install_root}
+    ${build_amd} && metisBuildAocc ${install_root}
 
     metisInstallModuleFile
     metisInstallationTest
@@ -187,9 +187,9 @@ function metisInstallModuleFile {
 
 function metisInstallationTest {
 
-    metisTest PrgEnv-cray
-    metisTest PrgEnv-gnu
-    metisTest PrgEnv-aocc
+    ${test_cce} && metisTest PrgEnv-cray
+    ${test_gnu} && metisTest PrgEnv-gnu
+    ${test_amd} && metisTest PrgEnv-aocc
 
     printf "Completed metis installation test successfully\n"
 }

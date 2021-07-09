@@ -16,14 +16,14 @@ function main {
 
     local install_root=${prefix}/libs/superlu-dist/${SUPERLUDIST_VERSION}
 
-    superludistBuildAocc ${install_root}
-    superludistBuildCray ${install_root}
-    superludistBuildGnu  ${install_root}
+    ${build_amd} && superludistBuildAocc ${install_root}
+    ${build_cce} && superludistBuildCray ${install_root}
+    ${build_gnu} && superludistBuildGnu  ${install_root}
     
     superludistInstallModuleFile
     superludistInstallationTest
 
-    printf "Test and installation of SuperLU_DIST complete\n"
+    printf "ARCHER2: Test and installation of SuperLU_DIST complete\n"
 }
 
 function superludistBuildAocc {
@@ -196,9 +196,9 @@ function superludistInstallModuleFile {
 
 function superludistInstallationTest {
 
-    superludistTest PrgEnv-cray
-    superludistTest PrgEnv-gnu
-    superludistTest PrgEnv-aocc
+    ${test_cce} && superludistTest PrgEnv-cray
+    ${test_gnu} && superludistTest PrgEnv-gnu
+    ${test_amd} && superludistTest PrgEnv-aocc
 
 }
 

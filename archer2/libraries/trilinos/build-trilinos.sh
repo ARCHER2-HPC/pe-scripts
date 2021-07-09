@@ -16,10 +16,9 @@ function main {
 
     local install_root=${prefix}/libs/trilinos/${TRILINOS_VERSION}
 
-    # AOCC not operational at this time
-    #trilinosBuildAocc ${install_root}
-    trilinosBuildCray ${install_root}
-    trilinosBuildGnu  ${install_root}
+    ${build_amd} && trilinosBuildAocc ${install_root}
+    ${build_cce} && trilinosBuildCray ${install_root}
+    ${build_gnu} && trilinosBuildGnu  ${install_root}
 
     trilinosInstallModuleFile
     trilinosInstallationTest
@@ -27,7 +26,6 @@ function main {
 
 function trilinosLoadModuleDependencies {
 
-    printf "Start loadModuleDependencies\n"
     moduleUseLibs
     module load cray-hdf5-parallel
     module load cray-netcdf-hdf5parallel
@@ -46,13 +44,13 @@ function trilinosBuildAocc {
 
     local install_root=${1}
 
-    # buildVersion AOCC 2.1
-    module -s restore /etc/cray-pe.d/PrgEnv-aocc
+    module restore $(moduleCollection PrgEnv-aocc)
+    module swap aocc aocc/${PE_AOCC_AOCC_VERSION}
 
     trilinosLoadModuleDependencies
     module list
 
-    amd_version=2.1
+    amd_version=$(moduleToCompilerMajorMinor)
     amd_root=${install_root}/AOCC
     amd_prefix=${amd_root}/${amd_version}
 
@@ -63,13 +61,13 @@ function trilinosBuildCray {
 
     local install_root=${1}
 
-    # buildVersion CRAYCLANG 10.0
-    module -s restore /etc/cray-pe.d/PrgEnv-cray
+    module restore $(moduleCollection PrgEnv-cray)
+    module swap cce cce/${PE_CRAY_CCE_VERSION}
 
     trilinosLoadModuleDependencies
     module list
 
-    cray_version=10.0
+    cray_version=$(moduleToCompilerMajorMinor)
     cray_root=${install_root}/CRAYCLANG
     cray_prefix=${cray_root}/${cray_version}
 
@@ -80,14 +78,13 @@ function trilinosBuildGnu {
 
     local install_root=${1}
 
-    # buildVersion GNU 9.3
-    module -s restore /etc/cray-pe.d/PrgEnv-gnu
-    module swap gcc gcc/9.3.0
+    module restore $(moduleCollection PrgEnv-gnu)
+    module swap gcc gcc/${PE_GNU_GCC_VERSION}
 
     trilinosLoadModuleDependencies
     module list
 
-    gnu_version=9.3
+    gnu_version=$(moduleToCompilerMajorMinor)
     gnu_root=${install_root}/GNU
     gnu_prefix=${gnu_root}/${gnu_version}
 
@@ -178,9 +175,9 @@ function trilinosInstallModuleFile {
 
 function trilinosInstallationTest {
 
-    trilinosTest PrgEnv-cray
-    trilinosTest PrgEnv-gnu
-    #trilinosTest PrgEnv-aocc
+    ${test_cce} && trilinosTest PrgEnv-cray
+    ${test_gnu} && trilinosTest PrgEnv-gnu
+    ${test_amd} && trilinosTest PrgEnv-aocc
 }
 
 function trilinosTest {
@@ -191,12 +188,12 @@ function trilinosTest {
     local module_use=$(moduleInstallDirectory)
 
     printf "Trilinos test for %s\n" "${prgenv}"
-    module -s restore /etc/cray-pe.d/${prgenv}
+    module restore $(moduleCollection ${prgenv})
     module use ${module_use}
 
     module load trilinos/${TRILINOS_VERSION}
 
-    cd trilinos-${TRILINOS_VERSION}-Source
+    cd trilinos-${TRILINOS_VERSION}
 
     cp ${script_dir}/src_file.[ch]pp .
     cp ${script_dir}/main_file.cpp .
@@ -209,6 +206,7 @@ function trilinosTest {
     slurmAllocRun "srun -n 2 ./test_app"
 
     cd -
+    module unload trilinos
 }
 
 main

@@ -16,14 +16,14 @@ function main {
 
     local install_root=${prefix}/libs/arpack-ng/${ARPACK_VERSION}
 
-    arpackBuildAocc ${install_root}
-    arpackBuildCray ${install_root}
-    arpackBuildGnu  ${install_root}
+    ${build_amd} && arpackBuildAocc ${install_root}
+    ${build_cce} && arpackBuildCray ${install_root}
+    ${build_gnu} && arpackBuildGnu  ${install_root}
     
     arpackInstallModuleFile
     arpackInstallationTest ${install_root}
 
-    printf "Arpack nstallation test completed successfully\n"
+    printf "ARCHER2: Arpack installation test completed successfully\n"
 }
 
 function arpackBuildAocc {
@@ -183,9 +183,9 @@ function arpackInstallModuleFile {
 
 function arpackInstallationTest {
 
-    arpackTest PrgEnv-cray
-    arpackTest PrgEnv-gnu
-    arpackTest PrgEnv-aocc
+    ${test_cce} && arpackTest PrgEnv-cray
+    ${test_gnu} && arpackTest PrgEnv-gnu
+    ${test_amd} && arpackTest PrgEnv-aocc
 
 }
 
@@ -210,6 +210,7 @@ function arpackTest {
     rm -f a.out
 
     cd -
+    module unload arpack-ng
 }
 
 main

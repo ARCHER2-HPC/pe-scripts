@@ -16,14 +16,14 @@ function main {
 
     local install_root=${prefix}/libs/petsc/${PETSC_VERSION}
 
-    petscBuildCray ${install_root}
-    petscBuildGnu  ${install_root}
-    petscBuildAocc ${install_root}
+    ${build_cce} && petscBuildCray ${install_root}
+    ${build_gnu} && petscBuildGnu  ${install_root}
+    ${build_amd} && petscBuildAocc ${install_root}
 
     petscInstallModuleFile
     petscInstallationTest
 
-    printf "ARCHER2: successful installation and test of PETSc\n"
+    printf "ARCHER2: PETSC install/test complete\n"
 }
 
 function petscLoadModuleDependencies {
@@ -166,9 +166,9 @@ function petscInstallModuleFile {
 
 function petscInstallationTest {
 
-    petscTest PrgEnv-cray
-    petscTest PrgEnv-gnu
-    petscTest PrgEnv-aocc
+    ${test_cce} && petscTest PrgEnv-cray
+    ${test_gnu} && petscTest PrgEnv-gnu
+    ${test_amd} && petscTest PrgEnv-aocc
 }
 
 function petscTest {
@@ -194,6 +194,7 @@ function petscTest {
     slurmAllocRun "make PETSC_DIR=${PETSC_DIR} PETSC_ARCH= SUPERLU_DIST_LIB=yes HDF5_LIB=yes HYPRE_LIB=yes check"
 
     cd ..
+    module unload petsc
 }
 
 main

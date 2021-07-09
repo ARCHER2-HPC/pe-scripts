@@ -16,14 +16,14 @@ function main {
 
     local install_root=${prefix}/libs/mumps/${MUMPS_VERSION}
 
-    mumpsBuildCray ${install_root}
-    mumpsBuildGnu  ${install_root}
-    mumpsBuildAocc ${install_root}
+    ${build_cce} && mumpsBuildCray ${install_root}
+    ${build_gnu} && mumpsBuildGnu  ${install_root}
+    ${build_amd} && mumpsBuildAocc ${install_root}
 
     mumpsInstallModuleFile
     mumpsInstallationTest
 
-    printf "ARCHER2: MUMPS installation and installation test complete\n"
+    printf "ARCHER2: MUMPS installation/test complete\n"
 }
 
 function mumpsBuildAocc {
@@ -203,9 +203,9 @@ function mumpsInstallModuleFile {
 
 function mumpsInstallationTest {
 
-    mumpsTest PrgEnv-cray
-    mumpsTest PrgEnv-gnu
-    mumpsTest PrgEnv-aocc
+    ${test_cce} && mumpsTest PrgEnv-cray
+    ${test_gnu} && mumpsTest PrgEnv-gnu
+    ${test_amd} && mumpsTest PrgEnv-aocc
 
 }
 
@@ -239,3 +239,5 @@ function mumpsTest {
 }
 
 main
+
+return 0

@@ -16,14 +16,14 @@ function main {
 
     local install_root=${prefix}/libs/boost/${BOOST_VERSION}
 
-    boostBuildAocc ${install_root}
-    boostBuildCray ${install_root}
-    boostBuildGnu  ${install_root}
+    ${build_amd} && boostBuildAocc ${install_root}
+    ${build_cce} && boostBuildCray ${install_root}
+    ${build_gnu} && boostBuildGnu  ${install_root}
 
     boostInstallModuleFile 
     boostInstallationTest
 
-    printf "boost installation and installation test complete\n"
+    printf "ARCHER2: boost install/test complete\n"
 }
 
 function boostBuildAocc {
@@ -162,9 +162,9 @@ function boostInstallModuleFile {
 
 function boostInstallationTest {
 
-    boostTest PrgEnv-cray
-    boostTest PrgEnv-gnu
-    boostTest PrgEnv-aocc
+    ${test_cce} && boostTest PrgEnv-cray
+    ${test_gnu} && boostTest PrgEnv-gnu
+    ${test_amd} && boostTest PrgEnv-aocc
 }
 
 function boostTest {
@@ -193,6 +193,7 @@ function boostTest {
     boostTest_log "${src}"
     boostTest_variant "${src}"
 
+    module unload boost
 }
 
 function boostTest_graph_parallel {

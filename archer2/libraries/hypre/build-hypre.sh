@@ -16,14 +16,14 @@ function main {
 
     local install_root=${prefix}/libs/hypre/${HYPRE_VERSION}
 
-    hypreBuildCray ${install_root}
-    hypreBuildGnu  ${install_root}
-    hypreBuildAocc ${install_root}
+    ${build_cce} && hypreBuildCray ${install_root}
+    ${bluid_gnu} && hypreBuildGnu  ${install_root}
+    ${build_amd} && hypreBuildAocc ${install_root}
 
     hypreInstallModuleFile
     hypreInstallationTest
 
-    printf "HYPRE installed successfully\n"
+    printf "ARCHER2: HYPRE install/test successful\n"
 }
 
 function hypreBuildAocc {
@@ -173,9 +173,9 @@ function hypreInstallModuleFile {
 
 function hypreInstallationTest {
 
-    hypreTest PrgEnv-cray
-    hypreTest PrgEnv-gnu
-    hypreTest PrgEnv-aocc
+    ${test_cce} && hypreTest PrgEnv-cray
+    ${test_gnu} && hypreTest PrgEnv-gnu
+    ${test_amd} && hypreTest PrgEnv-aocc
 
 }
 
@@ -214,6 +214,7 @@ function hypreTest {
     make all COMPFLAG=-fopenmp FOMPFLAG=-fopenmp
     
     cd -
+    module unload hypre
 }
 
 main

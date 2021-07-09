@@ -13,6 +13,13 @@ cpe_version=21.03
 
 prefix=${TMPDIR:-/tmp}/$USER
 
+build_cce=true
+build_gnu=true
+build_amd=true
+test_cce=true
+test_gnu=true
+test_amd=true
+
 for arg in "$@" ; do
 
     case $arg in
