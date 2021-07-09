@@ -102,7 +102,9 @@ printf "unpacking source" \
          -xf trilinos-$VERSION-Source.tar.xz \
   && echo "done" \
   || fn_error "could not untar source"
-cd trilinos-$VERSION-Source
+
+mv trilinos-${VERSION}-Source trilinos-${VERSION}
+cd trilinos-$VERSION
 
 patches="
   trilinos-fortran-arg-mismatch.patch
