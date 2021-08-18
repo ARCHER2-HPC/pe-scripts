@@ -16,9 +16,9 @@ function main {
 
     local install_root=${prefix}/libs/adios/${ADIOS_VERSION}
 
-    adiosBuildCray ${install_root}
-    adiosBuildGnu  ${install_root}
-    adiosBuildAocc ${install_root}
+    ${build_cce} && adiosBuildCray ${install_root}
+    ${build_gnu} && adiosBuildGnu  ${install_root}
+    ${build_amd} && adiosBuildAocc ${install_root}
 
     adiosInstallModuleFile
     adiosInstallationTest
@@ -142,9 +142,9 @@ function adiosInstallModuleFile {
 
 function adiosInstallationTest {
 
-    adiosTest PrgEnv-cray
-    adiosTest PrgEnv-gnu
-    adiosTest PrgEnv-aocc
+    ${test_cce} && adiosTest PrgEnv-cray
+    ${test_gnu} && adiosTest PrgEnv-gnu
+    ${test_amd} && adiosTest PrgEnv-aocc
 }
 
 function adiosTest {
