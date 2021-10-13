@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Programming environment defaults at April 2021 (16+cabinet).
+# Programming environment defaults at October 2021 (23+cabinet).
 
 PE_CPE_VERSION=21.04
 

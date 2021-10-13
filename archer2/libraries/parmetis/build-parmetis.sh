@@ -14,13 +14,13 @@ function main {
 
     # Overall prefix must be supplied by command line
 
-    local install_root=${prefix}/libs/parmetis/${PARMETIS_VERSION}
+    local install_root=${install_root_libs}/parmetis/${PARMETIS_VERSION}
 
     ${build_cce} && parmetisBuildCray ${install_root}
     ${build_gnu} && parmetisBuildGnu  ${install_root}
     ${build_amd} && parmetisBuildAocc ${install_root}
 
-    parmetisInstallModuleFile
+    parmetisInstallModuleFileLua
     parmetisInstallationTest
 }
 
@@ -29,8 +29,9 @@ function parmetisBuildAocc {
     local install_root=${1}
 
     # Restore relevant PE/Compiler
-    module restore $(moduleCollection PrgEnv-aocc)
-    module swap aocc aocc/${PE_AOCC_AOCC_VERSION}
+
+    module load PrgEnv-aocc
+    module load aocc/${PE_AOCC_AOCC_VERSION}
 
     moduleUseLibs
     module load metis/${METIS_VERSION}
@@ -41,14 +42,16 @@ function parmetisBuildAocc {
     amd_prefix=${amd_root}/${amd_version}
 
     parmetisBuild ${amd_prefix}
+
+    module unload metis
 }
 
 function parmetisBuildCray {
 
     local install_root=${1}
 
-    module restore $(moduleCollection PrgEnv-cray)
-    module swap cce cce/${PE_CRAY_CCE_VERSION}
+    module load PrgEnv-cray
+    module load cce/${PE_CRAY_CCE_VERSION}
 
     moduleUseLibs
     module load metis/${METIS_VERSION}
@@ -59,14 +62,16 @@ function parmetisBuildCray {
     cray_prefix=${cray_root}/${cray_version}
 
     parmetisBuild ${cray_prefix}
+
+    module unload metis
 }
 
 function parmetisBuildGnu {    
 
     local install_root=${1}
 
-    module restore $(moduleCollection PrgEnv-gnu)
-    module swap gcc gcc/${PE_GNU_GCC_VERSION}
+    module load PrgEnv-gnu
+    module load gcc/${PE_GNU_GCC_VERSION}
 
     moduleUseLibs
     module load metis/${METIS_VERSION}
@@ -77,6 +82,8 @@ function parmetisBuildGnu {
     gnu_prefix=${gnu_root}/${gnu_version}
 
     parmetisBuild ${gnu_prefix}
+
+    module unload metis
 }
 
 function parmetisBuild {
@@ -153,6 +160,34 @@ function parmetisPackageConfigFiles {
     pcFileWriteOverallPackageFile "${prefix}/lib/pkgconfig/parmetis.pc" pcmap
 }
 
+function parmetisInstallModuleFileLua {
+
+    local module_preamble=${script_dir}/module_preamble.lua
+    local module_boilerplate=${script_dir}/module_boilerplate.lua
+
+    # Destination
+    local module_dir=$(moduleInstallDirectory)
+
+    if [[ ! -d ${module_dir}/parmetis ]]; then
+        mkdir ${module_dir}/parmetis
+    fi
+
+    local module_file=${module_dir}/parmetis/${PARMETIS_VERSION}.lua
+
+    # Copy add update the template
+
+    cat ${module_preamble}     > ${module_file}
+    cat ${module_boilerplate} >> ${module_file}
+
+    module use ${module_dir}
+    module load parmetis/${PARMETIS_VERSION}
+
+    cc --cray-print-opts
+
+    module unload parmetis
+    module unuse ${module_dir}
+}
+
 function parmetisInstallModuleFile {
 
     local module_template=${script_dir}/modulefile.tcl
@@ -196,7 +231,8 @@ function parmetisTest {
     local module_use=$(moduleInstallDirectory)
 
     printf "Parmetis test for %s\n" "${prgenv}"
-    module restore $(moduleCollection ${prgenv})
+
+    module load ${prgenv}
     module use ${module_use}
 
     module load parmetis/${PARMETIS_VERSION}
@@ -210,6 +246,7 @@ function parmetisTest {
     slurmAllocRun "srun -n 3 ./a.out"
 
     cd -
+    module unload parmetis
 }
 
 main

@@ -14,13 +14,13 @@ function main {
 
     # Overall prefix must be supplied by command line
 
-    local install_root=${prefix}/libs/petsc/${PETSC_VERSION}
+    local install_root=${install_root_libs}/petsc/${PETSC_VERSION}
 
     ${build_cce} && petscBuildCray ${install_root}
     ${build_gnu} && petscBuildGnu  ${install_root}
     ${build_amd} && petscBuildAocc ${install_root}
 
-    petscInstallModuleFile
+    petscInstallModuleFileLua
     petscInstallationTest
 
     printf "ARCHER2: PETSC install/test complete\n"
@@ -29,14 +29,26 @@ function main {
 function petscLoadModuleDependencies {
 
     moduleUseLibs
-    module load cray-hdf5-parallel/${CRAY_HDF5_PARALLEL_VERSION}
-    module load parmetis/${PARMETIS_VERSION}
+
+    # Pending AOCC pkgconfig fix...
+    #module load cray-hdf5-parallel/${CRAY_HDF5_PARALLEL_VERSION}
+    module load epcc-cray-hdf5-parallel/${CRAY_HDF5_PARALLEL_VERSION}
     module load hypre/${HYPRE_VERSION}
-    module load scotch/${SCOTCH_VERSION}
     module load mumps/${MUMPS_VERSION}
     module load superlu/${SUPERLU_VERSION}
     module load superlu-dist/${SUPERLUDIST_VERSION}
 
+}
+
+function petscUnloadModuleDependencies {
+
+    module unload epcc-cray-hdf5-parallel/${CRAY_HDF5_PARALLEL_VERSION}
+    #module unload cray-hdf5-parallel/${CRAY_HDF5_PARALLEL_VERSION}
+    module unload hypre/${HYPRE_VERSION}
+    module unload mumps/${MUMPS_VERSION}
+    module unload superlu/${SUPERLU_VERSION}
+    module unload superlu-dist/${SUPERLUDIST_VERSION}
+    
 }
 
 function petscBuildAocc {
@@ -44,8 +56,8 @@ function petscBuildAocc {
     local install_root=${1}
     
     # restore pe/compiler
-    module restore $(moduleCollection PrgEnv-aocc)
-    module swap aocc aocc/${PE_AOCC_AOCC_VERSION}
+    module load PrgEnv-aocc
+    module load aocc/${PE_AOCC_AOCC_VERSION}
 
     petscLoadModuleDependencies
     module list
@@ -55,14 +67,16 @@ function petscBuildAocc {
     amd_prefix=${amd_root}/${amd_version}
 
     petscBuild ${amd_prefix}
+
+    petscUnloadModuleDependencies
 }
 
 function petscBuildCray {
 
     local install_root=${1}
 
-    module restore $(moduleCollection PrgEnv-cray)
-    module swap cce cce/${PE_CRAY_CCE_VERSION}
+    module load PrgEnv-cray
+    module load cce/${PE_CRAY_CCE_VERSION}
 
     petscLoadModuleDependencies
     module list
@@ -73,19 +87,22 @@ function petscBuildCray {
 
     petscBuild ${cray_prefix}
 
+    petscUnloadModuleDependencies
+
     # Package config file
     # The Cflags: argument has -Wno-unused-command-line-argument
     # which will crash Fortran, so remove it.
 
     sed -i 's/^Cflags.*/Cflags: -I${includedir}/' ${cray_prefix}/lib/pkgconfig/petsc.pc
+
 }
 
 function petscBuildGnu {    
 
     local install_root=${1}
 
-    module restore $(moduleCollection PrgEnv-gnu)
-    module swap gcc gcc/${PE_GNU_GCC_VERSION}
+    module load PrgEnv-gnu
+    module load gcc/${PE_GNU_GCC_VERSION}
 
     petscLoadModuleDependencies
     module list
@@ -95,6 +112,8 @@ function petscBuildGnu {
     gnu_prefix=${gnu_root}/${gnu_version}
 
     petscBuild ${gnu_prefix}
+
+    petscUnloadModuleDependencies
 }
 
 function petscBuild {
@@ -126,6 +145,35 @@ function petscBuildMPIOpenMP {
 
     ./sh/petsc.sh --jobs=16 --prefix=${prefix} --openmp --modules \
 		  --version=${PETSC_VERSION}
+}
+
+function petscInstallModuleFileLua {
+
+    local module_preamble=${script_dir}/module_preamble.lua
+    local module_boilerplate=${script_dir}/module_boilerplate.lua
+
+    # Destination
+    local module_dir=$(moduleInstallDirectory)
+
+    if [[ ! -d ${module_dir}/petsc ]]; then
+        mkdir ${module_dir}/petsc
+    fi
+
+    local module_file=${module_dir}/petsc/${PETSC_VERSION}.lua
+
+    # Copy add update the template
+
+    cat ${module_preamble}     > ${module_file}
+    cat ${module_boilerplate} >> ${module_file}
+
+    module use ${module_dir}
+    module load petsc/${PETSC_VERSION}
+
+    cc --cray-print-opts
+
+    module unload petsc
+    module unuse ${module_dir}
+
 }
 
 function petscInstallModuleFile {
@@ -177,7 +225,7 @@ function petscTest {
     local module_use=$(moduleInstallDirectory)
 
     printf "Petsc test for %s\n" "${prgenv}"
-    module restore $(moduleCollection ${prgenv})
+    module load ${prgenv}
     module use ${module_use}
 
     module load petsc/${PETSC_VERSION}

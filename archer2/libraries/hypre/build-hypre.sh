@@ -14,13 +14,13 @@ function main {
 
     # Overall prefix must be supplied by command line
 
-    local install_root=${prefix}/libs/hypre/${HYPRE_VERSION}
+    local install_root=${install_root_libs}/hypre/${HYPRE_VERSION}
 
     ${build_cce} && hypreBuildCray ${install_root}
     ${bluid_gnu} && hypreBuildGnu  ${install_root}
     ${build_amd} && hypreBuildAocc ${install_root}
 
-    hypreInstallModuleFile
+    hypreInstallModuleFileLua
     hypreInstallationTest
 
     printf "ARCHER2: HYPRE install/test successful\n"
@@ -31,8 +31,10 @@ function hypreBuildAocc {
     local install_root=${1}
     
     # Restore relevant PE/Compiler
-    module restore $(moduleCollection PrgEnv-aocc)
-    module swap aocc aocc/${PE_AOCC_AOCC_VERSION}
+
+    module load PrgEnv-aocc
+    module load aocc/${PE_AOCC_AOCC_VERSION}
+
     module list
 
     amd_version=$(moduleToCompilerMajorMinor)
@@ -46,8 +48,9 @@ function hypreBuildCray {
 
     local install_root=${1}
 
-    module restore $(moduleCollection PrgEnv-cray)
-    module swap cce cce/${PE_CRAY_CCE_VERSION}
+    module load PrgEnv-cray
+    module load cce/${PE_CRAY_CCE_VERSION}
+
     module list
 
     cray_version=$(moduleToCompilerMajorMinor)
@@ -61,8 +64,9 @@ function hypreBuildGnu {
 
     local install_root=${1}
 
-    module restore $(moduleCollection PrgEnv-gnu)
-    module swap gcc gcc/${PE_GNU_GCC_VERSION}
+    module load PrgEnv-gnu
+    module load gcc/${PE_GNU_GCC_VERSION}
+
     module list
 
     gnu_version=$(moduleToCompilerMajorMinor)
@@ -83,6 +87,9 @@ function hypreBuild {
     hypreBuildMPI ${prefix}
 
     hyprePackageConfigFiles ${prefix}
+
+    # Remove any shared objects
+    rm -f ${prefix}/lib/lib*.so
 }
 
 function hypreClean {
@@ -147,6 +154,36 @@ function hyprePackageConfigFiles {
     pcFileWriteOverallPackageFile "${prefix}/lib/pkgconfig/hypre.pc" pcmap
 }
 
+function hypreInstallModuleFileLua {
+
+    local module_preamble=${script_dir}/module_preamble.lua
+    local module_boilerplate=${script_dir}/module_boilerplate.lua
+
+    # Destination
+    local module_dir=$(moduleInstallDirectory)
+    local time_stamp=$(date)
+
+    if [[ ! -d ${module_dir}/hypre ]]; then
+        mkdir ${module_dir}/hypre
+    fi
+
+    local module_file=${module_dir}/hypre/${HYPRE_VERSION}.lua
+
+    # Copy add update the template
+
+    cat ${module_preamble}     > ${module_file}
+    cat ${module_boilerplate} >> ${module_file}
+
+    module use ${module_dir}
+    module load hypre/${HYPRE_VERSION}
+
+    cc --cray-print-opts
+
+    module unload hypre
+    module unuse ${module_dir}
+
+}
+
 function hypreInstallModuleFile {
 
     local module_template=${script_dir}/modulefile.tcl
@@ -185,7 +222,8 @@ function hypreTest {
     local module_use=$(moduleInstallDirectory)
 
     printf "Hypre test for %s\n" "${prgenv}"
-    module restore $(moduleCollection ${prgenv})
+
+    module load ${prgenv}
     module use ${module_use}
 
     module load hypre/${HYPRE_VERSION}

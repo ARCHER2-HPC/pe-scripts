@@ -14,13 +14,13 @@ function main {
 
     # Overall prefix must be supplied by command line
 
-    local install_root=${prefix}/libs/scotch/${SCOTCH_VERSION}
+    local install_root=${install_root_libs}/scotch/${SCOTCH_VERSION}
 
     ${build_amd} && scotchBuildAocc ${install_root}
     ${build_cce} && scotchBuildCray ${install_root}
     ${build_gnu} && scotchBuildGnu  ${install_root}
     
-    scotchInstallModuleFile
+    scotchInstallModuleFileLua
     scotchInstallationTest ${install_root}
 
     printf "ARCHER2: Scotch installation test completed successfully\n"
@@ -31,8 +31,9 @@ function scotchBuildAocc {
     local install_root=${1}
     
     # Restore relevant PE/Compiler
-    module restore $(moduleCollection PrgEnv-aocc)
-    module swap aocc aocc/${PE_AOCC_AOCC_VERSION}
+
+    module load PrgEnv-aocc
+    module load aocc/${PE_AOCC_AOCC_VERSION}
     module list
 
     amd_version=$(moduleToCompilerMajorMinor)
@@ -46,8 +47,9 @@ function scotchBuildCray {
 
     local install_root=${1}
 
-    module restore $(moduleCollection PrgEnv-cray)
-    module swap cce cce/${PE_CRAY_CCE_VERSION}
+    module load PrgEnv-cray
+    module load cce/${PE_CRAY_CCE_VERSION}
+
     module list
 
     cray_version=$(moduleToCompilerMajorMinor)
@@ -61,8 +63,9 @@ function scotchBuildGnu {
 
     local install_root=${1}
 
-    module restore $(moduleCollection PrgEnv-gnu)
-    module swap gcc gcc/${PE_GNU_GCC_VERSION}
+    module load PrgEnv-gnu
+    module load gcc/${PE_GNU_GCC_VERSION}
+
     module list
 
     gnu_version=$(moduleToCompilerMajorMinor)
@@ -155,6 +158,35 @@ function scotchPackageConfigFiles {
     pcFileWriteOverallPackageFile "${prefix}/lib/pkgconfig/scotch.pc" pcmap
 }
 
+function scotchInstallModuleFileLua {
+
+    local module_preamble=${script_dir}/module_preamble.lua
+    local module_boilerplate=${script_dir}/module_boilerplate.lua
+
+    # Destination
+    local module_dir=$(moduleInstallDirectory)
+
+    if [[ ! -d ${module_dir}/scotch ]]; then
+        mkdir ${module_dir}/scotch
+    fi
+
+    local module_file=${module_dir}/scotch/${SCOTCH_VERSION}.lua
+
+    # Copy add update the template
+
+    cat ${module_preamble}     > ${module_file}
+    cat ${module_boilerplate} >> ${module_file}
+
+    module use ${module_dir}
+    module load scotch/${SCOTCH_VERSION}
+
+    cc --cray-print-opts
+
+    module unload scotch
+    module unuse ${module_dir}
+
+}
+
 function scotchInstallModuleFile {
 
     local module_template=${script_dir}/modulefile.tcl
@@ -197,7 +229,8 @@ function scotchTest {
     local version="${SCOTCH_VERSION}"
 
     printf "Scotch test for %s\n" "${prgenv}"
-    module restore $(moduleCollection ${prgenv})
+
+    module load ${prgenv}
     module use ${module_use}
 
     module load scotch/${version}
@@ -234,5 +267,3 @@ function scotchTest {
 }
 
 main
-
-return 0

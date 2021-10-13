@@ -14,13 +14,13 @@ function main {
 
     # Overall prefix must be supplied by command line
 
-    local install_root=${prefix}/libs/superlu-dist/${SUPERLUDIST_VERSION}
+    local install_root=${install_root_libs}/superlu-dist/${SUPERLUDIST_VERSION}
 
     ${build_amd} && superludistBuildAocc ${install_root}
     ${build_cce} && superludistBuildCray ${install_root}
     ${build_gnu} && superludistBuildGnu  ${install_root}
     
-    superludistInstallModuleFile
+    superludistInstallModuleFileLua
     superludistInstallationTest
 
     printf "ARCHER2: Test and installation of SuperLU_DIST complete\n"
@@ -31,8 +31,9 @@ function superludistBuildAocc {
     local install_root=${1}
     
     # Restore relevant PE/Compiler
-    module restore $(moduleCollection PrgEnv-aocc)
-    module swap aocc aocc/${PE_AOCC_AOCC_VERSION}
+
+    module load PrgEnv-aocc
+    module load aocc/${PE_AOCC_AOCC_VERSION}
 
     moduleUseLibs
     module load parmetis/${PARMETIS_VERSION}
@@ -44,14 +45,16 @@ function superludistBuildAocc {
     amd_prefix=${amd_root}/${amd_version}
 
     superludistBuild ${amd_prefix}
+
+    module unload parmetis
 }
 
 function superludistBuildCray {
 
     local install_root=${1}
 
-    module restore $(moduleCollection PrgEnv-cray)
-    module swap cce cce/${PE_CRAY_CCE_VERSION}
+    module load PrgEnv-cray
+    module load cce/${PE_CRAY_CCE_VERSION}
 
     moduleUseLibs
     module load parmetis/${PARMETIS_VERSION}
@@ -63,14 +66,16 @@ function superludistBuildCray {
     cray_prefix=${cray_root}/${cray_version}
 
     superludistBuild ${cray_prefix}
+
+    module unload parmetis
 }
 
 function superludistBuildGnu {    
 
     local install_root=${1}
 
-    module restore $(moduleCollection PrgEnv-gnu)
-    module swap gcc gcc/${PE_GNU_GCC_VERSION}
+    module load PrgEnv-gnu
+    module load gcc/${PE_GNU_GCC_VERSION}
 
     moduleUseLibs
     module load parmetis/${PARMETIS_VERSION}
@@ -82,6 +87,8 @@ function superludistBuildGnu {
     gnu_prefix=${gnu_root}/${gnu_version}
 
     superludistBuild ${gnu_prefix}
+
+    module unload parmetis
 }
 
 function superludistBuild {
@@ -166,6 +173,35 @@ function superludistPackageConfigFiles {
     pcFileWriteOverallPackageFile "${prefix}/lib/pkgconfig/superlu_dist.pc" pcmap
 }
 
+function superludistInstallModuleFileLua {
+
+    local module_preamble=${script_dir}/module_preamble.lua
+    local module_boilerplate=${script_dir}/module_boilerplate.lua
+
+    # Destination
+    local module_dir=$(moduleInstallDirectory)
+
+    if [[ ! -d ${module_dir}/superlu-dist ]]; then
+        mkdir ${module_dir}/superlu-dist
+    fi
+
+    local module_file=${module_dir}/superlu-dist/${SUPERLUDIST_VERSION}.lua
+
+    # Copy add update the template
+
+    cat ${module_preamble}     > ${module_file}
+    cat ${module_boilerplate} >> ${module_file}
+
+    module use ${module_dir}
+    module load superlu-dist/${SUPERLUDIST_VERSION}
+
+    cc --cray-print-opts
+
+    module unload superlu-dist
+    module unuse ${module_dir}
+
+}
+    
 function superludistInstallModuleFile {
 
     local module_template=${script_dir}/modulefile.tcl
@@ -208,7 +244,8 @@ function superludistTest {
     local version="${SUPERLUDIST_VERSION}"
 
     printf "SuperLU test for %s\n" "${prgenv}"
-    module restore $(moduleCollection ${prgenv})
+
+    module load ${prgenv}
     moduleUseLibs
 
     module load superlu-dist/${version}

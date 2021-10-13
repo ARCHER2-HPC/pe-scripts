@@ -14,13 +14,13 @@ function main {
 
     # Overall prefix must be supplied by command line
 
-    local install_root=${prefix}/libs/slepc/${SLEPC_VERSION}
+    local install_root=${install_root_libs}/slepc/${SLEPC_VERSION}
 
     ${build_cce} && slepcBuildCray ${install_root}
     ${build_gnu} && slepcBuildGnu  ${install_root}
     ${build_amd} && slepcBuildAocc ${install_root}
 
-    slepcInstallModuleFile
+    slepcInstallModuleFileLua
     slepcInstallationTest
 
     printf "ARCHER2: successful installation and test of SLEPc\n"
@@ -33,12 +33,18 @@ function slepcLoadModuleDependencies {
 
 }
 
+function slepcUnloadModuleDependencies {
+
+    module unload petsc
+
+}
+
 function slepcBuildAocc {
 
     local install_root=${1}
     
-    module restore $(moduleCollection PrgEnv-aocc)
-    module swap aocc aocc/${PE_AOCC_AOCC_VERSION}
+    module load PrgEnv-aocc
+    module load aocc/${PE_AOCC_AOCC_VERSION}
 
     slepcLoadModuleDependencies
     module list
@@ -48,14 +54,16 @@ function slepcBuildAocc {
     amd_prefix=${amd_root}/${amd_version}
 
     slepcBuild ${amd_prefix}
+
+    slepcUnloadModuleDependencies
 }
 
 function slepcBuildCray {
 
     local install_root=${1}
 
-    module restore $(moduleCollection PrgEnv-cray)
-    module swap cce cce/${PE_CRAY_CCE_VERSION}
+    module load PrgEnv-cray
+    module load cce/${PE_CRAY_CCE_VERSION}
 
     slepcLoadModuleDependencies
     module list
@@ -65,6 +73,8 @@ function slepcBuildCray {
     cray_prefix=${cray_root}/${cray_version}
 
     slepcBuild ${cray_prefix}
+
+    slepcUnloadModuleDependencies
 
     # Package config file
     # The Cflags: argument has -Wno-unused-command-line-argument
@@ -77,8 +87,8 @@ function slepcBuildGnu {
 
     local install_root=${1}
 
-    module restore $(moduleCollection PrgEnv-gnu)
-    module swap gcc gcc/${PE_GNU_GCC_VERSION}
+    module load PrgEnv-gnu
+    module load gcc/${PE_GNU_GCC_VERSION}
 
     slepcLoadModuleDependencies
     module list
@@ -88,6 +98,8 @@ function slepcBuildGnu {
     gnu_prefix=${gnu_root}/${gnu_version}
 
     slepcBuild ${gnu_prefix}
+
+    slepcUnloadModuleDependencies
 }
 
 function slepcBuild {
@@ -160,6 +172,35 @@ function slepcPackageConfigFiles {
 }
 
 
+function slepcInstallModuleFileLua {
+
+    local module_preamble=${script_dir}/module_preamble.lua
+    local module_boilerplate=${script_dir}/module_boilerplate.lua
+
+    # Destination
+    local module_dir=$(moduleInstallDirectory)
+
+    if [[ ! -d ${module_dir}/slepc ]]; then
+        mkdir ${module_dir}/slepc
+    fi
+
+    local module_file=${module_dir}/slepc/${SLEPC_VERSION}.lua
+
+    # Copy add update the template
+
+    cat ${module_preamble}     > ${module_file}
+    cat ${module_boilerplate} >> ${module_file}
+
+    module use ${module_dir}
+    module load slepc/${SLEPC_VERSION}
+
+    cc --cray-print-opts
+
+    module unload slepc
+    module unuse ${module_dir}
+
+}
+
 function slepcInstallModuleFile {
 
     local module_template=${script_dir}/modulefile.tcl
@@ -182,7 +223,11 @@ function slepcInstallModuleFile {
     # Ensure this has worked
     module use ${module_dir}
     module load slepc/${SLEPC_VERSION}
+
+    cc --cray-print-opts
+
     module unload slepc
+    module unuse ${module_dir}
 }
 
 function slepcInstallationTest {
@@ -198,7 +243,8 @@ function slepcTest {
     local module_use=$(moduleInstallDirectory)
 
     printf "Slepc test for %s\n" "${prgenv}"
-    module restore $(moduleCollection ${prgenv})
+
+    module load ${prgenv}
     module use ${module_use}
 
     module load slepc/${SLEPC_VERSION}

@@ -14,14 +14,15 @@ function main {
 
     # Overall prefix must be supplied by command line
 
-    local install_root=${prefix}/libs/superlu/${SUPERLU_VERSION}
+    local install_root=${install_root_libs}/superlu/${SUPERLU_VERSION}
 
     ${build_amd} && superluBuildAocc ${install_root}
     ${build_cce} && superluBuildCray ${install_root}
     ${build_gnu} && superluBuildGnu  ${install_root}
 
-    superluInstallModuleFile
+    superluInstallModuleFileLua
     superluInstallationTest
+
     printf "ARCHER2: installation (and test) of superlu successful\n"
 }
 
@@ -30,8 +31,10 @@ function superluBuildAocc {
     local install_root=${1}
     
     # Restore relavant PE/Compiler
-    module restore $(moduleCollection PrgEnv-aocc)
-    module swap aocc aocc/${PE_AOCC_AOCC_VERSION}
+
+    module load PrgEnv-aocc
+    module load aocc/${PE_AOCC_AOCC_VERSION}
+
     module list
 
     amd_version=$(moduleToCompilerMajorMinor)
@@ -45,8 +48,9 @@ function superluBuildCray {
 
     local install_root=${1}
 
-    module restore $(moduleCollection PrgEnv-cray)
-    module swap cce cce/${PE_CRAY_CCE_VERSION}
+    module load PrgEnv-cray
+    module load cce/${PE_CRAY_CCE_VERSION}
+
     module list
 
     cray_version=$(moduleToCompilerMajorMinor)
@@ -60,8 +64,9 @@ function superluBuildGnu {
 
     local install_root=${1}
 
-    module restore $(moduleCollection PrgEnv-gnu)
-    module swap gcc gcc/${PE_GNU_GCC_VERSION}
+    module load PrgEnv-gnu
+    module load gcc/${PE_GNU_GCC_VERSION}
+
     module list
 
     gnu_version=$(moduleToCompilerMajorMinor)
@@ -129,6 +134,35 @@ function superluPackageConfigFiles {
     pcFileWriteOverallPackageFile "${prefix}/lib/pkgconfig/superlu.pc" pcmap
 }
 
+function superluInstallModuleFileLua {
+
+    local module_preamble=${script_dir}/module_preamble.lua
+    local module_boilerplate=${script_dir}/module_boilerplate.lua
+
+    # Destination
+    local module_dir=$(moduleInstallDirectory)
+
+    if [[ ! -d ${module_dir}/superlu ]]; then
+        mkdir ${module_dir}/superlu
+    fi
+
+    local module_file=${module_dir}/superlu/${SUPERLU_VERSION}.lua
+
+    # Copy add update the template
+
+    cat ${module_preamble}     > ${module_file}
+    cat ${module_boilerplate} >> ${module_file}
+
+    module use ${module_dir}
+    module load superlu/${SUPERLU_VERSION}
+
+    cc --cray-print-opts
+
+    module unload superlu
+    module unuse ${module_dir}
+
+}
+
 function superluInstallModuleFile {
 
     local module_template=${script_dir}/modulefile.tcl
@@ -170,7 +204,8 @@ function superluTest {
     local version=${SUPERLU_VERSION}
 
     printf "Superlu test for %s\n" "${prgenv}"
-    module restore $(moduleCollection ${prgenv})
+
+    module load ${prgenv}
     module use ${module_use}
 
     module load superlu/${version}

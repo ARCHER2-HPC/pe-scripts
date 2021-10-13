@@ -2,12 +2,12 @@
 
 set -e
 
-# Switch off paging (esp. for "module restore")
-export MODULES_PAGER=""
+# Switch off paging (esp. for long listings)
+export LMOD_PAGER="None"
 
 # Default location, PE
 cse_root=/work/y07/shared
-cpe_version=21.03
+cpe_version=21.04
 
 # Common functions plus command line argument processing
 
@@ -41,30 +41,16 @@ done
 # libraries to: ${install_root_libs}
 # modules   to: ${install_root_mods}
 
-install_root_libs=${prefix}/libs
+install_root_libs=${prefix}/libs/core
 if [[ -n ${modprefix} ]]; then
     install_root_mods=${modprefix}
 else
     modprefix=${prefix}
-    install_root_mods=${prefix}/archer2-modules/modulefiles-cse-libs
+    install_root_mods=${prefix}/archer2-lmod/libs/core
 fi
 
 mkdir -p ${install_root_libs}
 mkdir -p ${install_root_mods}
-
-# We need ${cse_root}/archer2-modules/archer-modules-tcl.lib
-# and     ${cse_root}/archer2-modules/archer-pkgconfig-tcl.lib
-# for testing purposes.
-
-if [ ! -f "${modprefix}/archer2-modules/archer-modules-tcl.lib" ]; then
-    cp ${cse_root}/archer2-modules/archer-modules-tcl.lib \
-       ${modprefix}/archer2-modules/archer-modules-tcl.lib
-fi
-
-if [ ! -f "${modprefix}/archer2-modules/archer-pkgconfig-tcl.lib" ]; then
-    cp ${cse_root}/archer2-modules/archer-pkgconfig-tcl.lib \
-       ${modprefix}/archer2-modules/archer-pkgconfig-tcl.lib
-fi
 
 # Check programming environment
 
@@ -112,7 +98,7 @@ function moduleCollection {
 
     local prgenv=$1
 
-    echo "${prgenv_dir}/${prgenv}"
+    echo ${prgenv}
 }
 
 function moduleToCompilerMajorMinor {
@@ -173,21 +159,19 @@ function moduleInstallDirectory {
 
 function moduleUseLibs {
 
-    module unuse /work/y07/shared/archer2-modules/modulefiles-cse-libs
     module use ${install_root_mods}
     printf "MODULEPATH: %s\n" "${MODULEPATH}"
 
 }
 
-function moduleRestore {
+function moduleLoad {
 
     # A wrapper to "module restore" to allow loading of a relevant
     # module file. "PrgEnv-cray" or "PrgEnv-gnu" or "PrgEnv-aocc"
 
     local prgenv=$1
 
-    module restore "${A2_ROOT}/module/${prgenv}-${PE_CPE_VERSION}"
-
+    module load ${prgenv}
 }
 
 function slurmAllocRun {
