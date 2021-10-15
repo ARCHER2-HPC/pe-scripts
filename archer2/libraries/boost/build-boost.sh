@@ -16,9 +16,9 @@ function main {
 
     local install_root=${install_root_libs}/boost/${BOOST_VERSION}
 
-    #${build_amd} && boostBuildAocc ${install_root}
-    #${build_cce} && boostBuildCray ${install_root}
-    #${build_gnu} && boostBuildGnu  ${install_root}
+    ${build_amd} && boostBuildAocc ${install_root}
+    ${build_cce} && boostBuildCray ${install_root}
+    ${build_gnu} && boostBuildGnu  ${install_root}
 
     boostInstallModuleFileLua
     boostInstallationTest
