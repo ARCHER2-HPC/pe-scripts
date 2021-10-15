@@ -14,24 +14,23 @@ function main {
 
     # Overall prefix must be supplied by command line
 
-    local install_root=${prefix}/libs/trilinos/${TRILINOS_VERSION}
+    local install_root=${install_root_libs}/trilinos/${TRILINOS_VERSION}
 
     ${build_amd} && trilinosBuildAocc ${install_root}
     ${build_cce} && trilinosBuildCray ${install_root}
     ${build_gnu} && trilinosBuildGnu  ${install_root}
 
-    trilinosInstallModuleFile
+    trilinosInstallModuleFileLua
     trilinosInstallationTest
 }
 
 function trilinosLoadModuleDependencies {
 
     moduleUseLibs
-    module load cray-hdf5-parallel
-    module load cray-netcdf-hdf5parallel
+
+    module load epcc-cray-hdf5-parallel
+    module load epcc-cray-netcdf-hdf5parallel
     
-    module load parmetis/${PARMETIS_VERSION}
-    module load scotch/${SCOTCH_VERSION}
     module load mumps/${MUMPS_VERSION}
     module load superlu/${SUPERLU_VERSION}
     module load superlu-dist/${SUPERLUDIST_VERSION}
@@ -40,12 +39,25 @@ function trilinosLoadModuleDependencies {
     module load boost/${BOOST_VERSION}
 }
 
+function trilinosUnloadModuleDependencies {
+
+    module unload boost
+    module unload glm
+    module unload matio
+    module unload superlu-dist
+    module unload superlu
+    module unload mumps
+
+    module unload epcc-cray-netcdf-hdf5parallel
+    module unload epcc-cray-hdf5-parallel
+}
+
 function trilinosBuildAocc {
 
     local install_root=${1}
 
-    module restore $(moduleCollection PrgEnv-aocc)
-    module swap aocc aocc/${PE_AOCC_AOCC_VERSION}
+    module load PrgEnv-aocc
+    module load aocc/${PE_AOCC_AOCC_VERSION}
 
     trilinosLoadModuleDependencies
     module list
@@ -55,14 +67,16 @@ function trilinosBuildAocc {
     amd_prefix=${amd_root}/${amd_version}
 
     trilinosBuild ${amd_prefix}
+
+    trilinosUnloadModuleDependencies
 }
 
 function trilinosBuildCray {
 
     local install_root=${1}
 
-    module restore $(moduleCollection PrgEnv-cray)
-    module swap cce cce/${PE_CRAY_CCE_VERSION}
+    module load PrgEnv-cray
+    module load cce/${PE_CRAY_CCE_VERSION}
 
     trilinosLoadModuleDependencies
     module list
@@ -72,14 +86,16 @@ function trilinosBuildCray {
     cray_prefix=${cray_root}/${cray_version}
 
     trilinosBuild ${cray_prefix}
+
+    trilinosUnloadModuleDependencies
 }
 
 function trilinosBuildGnu {    
 
     local install_root=${1}
 
-    module restore $(moduleCollection PrgEnv-gnu)
-    module swap gcc gcc/${PE_GNU_GCC_VERSION}
+    module load PrgEnv-gnu
+    module load gcc/${PE_GNU_GCC_VERSION}
 
     trilinosLoadModuleDependencies
     module list
@@ -89,6 +105,8 @@ function trilinosBuildGnu {
     gnu_prefix=${gnu_root}/${gnu_version}
 
     trilinosBuild ${gnu_prefix}
+
+    trilinosUnloadModuleDependencies
 }
 
 function trilinosBuild {
@@ -134,8 +152,38 @@ function trilinosPackageConfigFile {
     # reported by the build system. A better way ...
     pcmap[requires]="piro trilinoscouplings stokhos_muelu stokhos_ifpack2 stokhos_amesos2_mp_16_openmp stokhos_amesos2 stokhos_xpetra stokhos_tpetra stokhos_sacado stokhos shylu_ddbddc rol shylu_ddfrosch muelu-adapters locaepetra locathyra localapack muelu-interface loca muelu noxepetra noxlapack nox teko ifpack2-adapters ifpack2 stratimikos fei_trilinos fei_base stratimikosamesos2 stratimikosml stratimikosaztecoo stratimikosamesos ModeLaplace stratimikosbelos stratimikosifpack anasazitpetra anasaziepetra anasazi belostpetra stk_balance_lib belosxpetra belosepetra moertel belos ml stk_balance_test_utils zoltan2 galeri-epetra galeri-xpetra xpetra-sup amesos2 xpetra optipack stk_tools_lib thyratpetra stk_transfer_utils_lib tpetrainout tpetraext stk_transfer_impl stk_search_util_base tpetra kokkostsqr stk_search kokkoskernels ifpack stk_mesh_fixtures stk_unit_test_utils thyraepetraext stk_io_util isorropia amesos stk_io epetraext thyraepetra rythmos stk_ngp Ionit stk_mesh_base Ioexo_fac Iofx komplex triutils aztecoo thyracore dpliris io_info_lib Iogn Iogs Iotr Iohb epetra Ioex Iovs Iopg Ioss phalanx stk_expreval intrepid globipack sacado tpetraclassicnodeapi rtop stk_topology tpetraclassiclinalg tpetraclassic teuchosnumerics stk_util_diag teuchoskokkoscomm teuchoscomm stk_util_env teuchoskokkoscompat stk_util_parallel stk_util_command_line teuchosparameterlist mapvarlib stk_util_util stk_util_registry zoltan aprepro_lib exodus_for exoIIv2for32 nemesis teuchosparser exodus pamgen teuchosremainder chaco teuchoscore suplib stk_ngp_test trilinosss kokkosalgorithms kokkoscontainers gtest stk_math kokkoscore suplib_cpp supes shards pamgen_extras suplib_c"
 
-    pcFileWriteOverallPackageFile "${prefix}/lib/pkgconfig/trilinos-cxx.pc" pcmap
-    # Fortran?
+    pcFileWriteOverallPackageFile "${prefix}/lib/pkgconfig/trilinos.pc" pcmap
+}
+
+function trilinosInstallModuleFileLua {
+
+    local module_preamble=${script_dir}/module_preamble.lua
+    local module_boilerplate=${script_dir}/module_boilerplate.lua
+
+    # Destination
+    local module_dir=$(moduleInstallDirectory)
+
+    if [[ ! -d ${module_dir}/trilinos ]]; then
+        mkdir ${module_dir}/trilinos
+    fi
+
+    local module_file=${module_dir}/trilinos/${TRILINOS_VERSION}.lua
+
+    # Copy add update the template
+
+    cat ${module_preamble}     > ${module_file}
+    cat ${module_boilerplate} >> ${module_file}
+
+    # Smoke test module file
+
+    module use ${module_dir}
+    module load trilinos/${TRILIONS_VERSION}
+
+    cc --cray-print-opts
+
+    module unload trilinos
+    module unuse ${module_dir}
+
 }
 
 function trilinosInstallModuleFile {
@@ -188,7 +236,8 @@ function trilinosTest {
     local module_use=$(moduleInstallDirectory)
 
     printf "Trilinos test for %s\n" "${prgenv}"
-    module restore $(moduleCollection ${prgenv})
+
+    module load ${prgenv}
     module use ${module_use}
 
     module load trilinos/${TRILINOS_VERSION}
