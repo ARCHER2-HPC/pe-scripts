@@ -70,15 +70,14 @@ function epccProductAvailableVersions(productRoot)
 end
 
 -- Find sharedRoot; typically /work/y07/shared
--- which must correspond to   /work/y07/shared/archer2-lmod/core
+-- which must correspond to   /work/y07/shared/archer2-lmod/libs/core
 -- the last two parts of which are returned by hierarchy()
 
 function epccSharedRoot()
 
   local fullPath = myFileName()
-  local archer2LmodCore = hierarchyA(myModuleFullName(), 1)
 
-  local i, j = string.find(fullPath, "/" .. archer2LmodCore[1], 1, true)
+  local i, j = string.find(fullPath, "/" .. "archer2-lmod", 1, true)
   local sharedRoot = pathJoin(string.sub(fullPath, 1, i-1), "libs/core")
 
   return sharedRoot
