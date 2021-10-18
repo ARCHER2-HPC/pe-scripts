@@ -42,6 +42,7 @@ done
 # modules   to: ${install_root_mods}
 
 install_root_libs=${prefix}/libs/core
+install_root_utils=${prefix}/utils/core
 if [[ -n ${modprefix} ]]; then
     install_root_mods=${modprefix}
 else
@@ -51,6 +52,7 @@ fi
 
 mkdir -p ${install_root_libs}
 mkdir -p ${install_root_mods}
+mkdir -p ${prefix}/archer2-lmod/utils/core
 
 # Check programming environment
 
@@ -161,6 +163,17 @@ function moduleUseLibs {
 
     module use ${install_root_mods}
     printf "MODULEPATH: %s\n" "${MODULEPATH}"
+
+}
+
+function moduleInstallDirectoryUtils {
+
+    echo "${prefix}/archer2-lmod/utils/core"
+}
+
+function moduleUseUtils {
+
+    module use $(moduleInstallDirectoryUtils)
 
 }
 

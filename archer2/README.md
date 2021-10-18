@@ -91,3 +91,8 @@ Some details for each package will appear here.
 |--------------|----------|----------------------------|---------|------|
 | arpack-ng    | 3.8.0    | none                       | no      | yes  |
 
+
+
+## Other
+
+See also https://github.com/PE-Cray/cpe-changelog
