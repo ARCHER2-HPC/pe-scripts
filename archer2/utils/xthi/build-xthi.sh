@@ -19,9 +19,9 @@ function main {
 
     local install_root=${install_root_utils}/xthi/${XTHI_VERSION}
 
-    #${build_cce} && xthiBuildCray ${install_root}
-    #${build_gnu} && xthiBuildGnu  ${install_root}
-    #${build_amd} && xthiBuildAocc ${install_root}
+    ${build_cce} && xthiBuildCray ${install_root}
+    ${build_gnu} && xthiBuildGnu  ${install_root}
+    ${build_amd} && xthiBuildAocc ${install_root}
 
     xthiInstallModuleFileLua
     xthiInstallationTest
