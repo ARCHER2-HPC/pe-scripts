@@ -34,6 +34,12 @@ From the directory one level above this, .e.g.,
 $ bash ./archer2/libraries/metis/metis-build.sh --prefix=/work/y07/shared
 ```
 
+which will install libraries to
+
+```
+${prefix}/libs/core
+```
+
 ## Build
 
 For each package, a number of versions are compiled appropriate
@@ -43,7 +49,7 @@ for different programming environment.
 
 Modulefiles are installed to
 ```
-/work/y07/shared/archer2-modules/modulefiles-cse-libs
+/work/y07/shared/archer2-lmod/libs/core
 ```
 
 ## Library modules (formerly TPSL)
@@ -56,12 +62,12 @@ Some details for each package will appear here.
 | hypre        | 2.18.0   | none                    | yes     | yes  |
 | matio        | 1.5.18   | none                    | no      | no   |
 | metis        | 5.1.0    | none                    | yes     | no   |
-| mumps        | 5.2.1    | metis, parmetis, scotch | yes     | yes  |
+| mumps        | 5.3.5    | metis, parmetis, scotch | yes     | yes  |
 | parmetis     | 4.0.3    | none                    | yes     | yes  |
-| scotch       | 6.0.10   | none                    | no      | yes  |
+| scotch       | 6.1. 0   | none                    | no      | yes  |
 | sundials     | 4.1.0    | none                    | yes     | yes  |
-| superlu      | 5.2.1    | none                    | no      | no   |
-| superlu-dist | 6.1.1    | metis, parmetis         | yes     | yes  |
+| superlu      | 5.2.2    | none                    | no      | no   |
+| superlu-dist | 6.4.0    | metis, parmetis         | yes     | yes  |
 
 ## Library modules (others via pe-scripts)
 
@@ -69,10 +75,11 @@ Some details for each package will appear here.
 |--------------|----------|----------------------------|---------|------|
 | adios        | 1.13.1   | cray-hdf5-parallel         | no      | yes  |
 | boost        | 1.72.0   | none                       | no      | yes  |
-| petsc        | 3.13.3   | superlu, superlu-dist,     | yes     | yes  |
+| petsc        | 3.14.2   | superlu, superlu-dist,     | no      | yes  |
 |              |          | metis, parmetis, scotch,   |         |      |
-|              |          | mumps                      |         |      |
-| slepc        | tbc      | petsc                      |         |      |
+|              |          | mumps, hypre,              |         |      |
+|              |          | cray-hdf5-parallel         |         |      |
+| slepc        | 3.14.1   | petsc                      | no      | yes  |
 | trilinos     | 12.18.1  | cray-hdf5-parallel         | yes     | yes  |
 |              |          | cray-netcdf-hdf5parallel   |         |      |
 |              |          | tpsl (bar hypre,sundials)  |         |      |
@@ -80,4 +87,12 @@ Some details for each package will appear here.
 
 ## Library modules (other CSE)
 
+| Package      | Version  | Dependencies               | OpenMP? | MPI? |
+|--------------|----------|----------------------------|---------|------|
+| arpack-ng    | 3.8.0    | none                       | no      | yes  |
 
+
+
+## Other
+
+See also https://github.com/PE-Cray/cpe-changelog

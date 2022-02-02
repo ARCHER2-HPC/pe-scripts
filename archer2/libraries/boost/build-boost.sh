@@ -14,13 +14,13 @@ function main {
 
     # Overall prefix must be supplied by command line
 
-    local install_root=${prefix}/libs/boost/${BOOST_VERSION}
+    local install_root=${install_root_libs}/boost/${BOOST_VERSION}
 
     ${build_amd} && boostBuildAocc ${install_root}
     ${build_cce} && boostBuildCray ${install_root}
     ${build_gnu} && boostBuildGnu  ${install_root}
 
-    boostInstallModuleFile 
+    boostInstallModuleFileLua
     boostInstallationTest
 
     printf "ARCHER2: boost install/test complete\n"
@@ -31,8 +31,10 @@ function boostBuildAocc {
     local install_root=${1}
     
     # restore pe/compiler
-    module restore $(moduleCollection PrgEnv-aocc)
-    module swap aocc aocc/${PE_AOCC_AOCC_VERSION}
+
+    module load PrgEnv-aocc
+    module load aocc/${PE_AOCC_AOCC_VERSION}
+
     module list
 
     amd_version=$(moduleToCompilerMajorMinor)
@@ -46,8 +48,9 @@ function boostBuildCray {
 
     local install_root=${1}
 
-    module restore $(moduleCollection PrgEnv-cray)
-    module swap cce cce/${PE_CRAY_CCE_VERSION}
+    module load PrgEnv-cray
+    module load cce/${PE_CRAY_CCE_VERSION}
+
     module list
 
     cray_version=$(moduleToCompilerMajorMinor)
@@ -61,8 +64,9 @@ function boostBuildGnu {
 
     local install_root=${1}
 
-    module restore $(moduleCollection PrgEnv-gnu)
-    module swap gcc gcc/${PE_GNU_GCC_VERSION}
+    module load PrgEnv-gnu
+    module load gcc/${PE_GNU_GCC_VERSION}
+
     module list
 
     gnu_version=$(moduleToCompilerMajorMinor)
@@ -129,7 +133,36 @@ function boostPackageConfigFile {
     # Order is important for link stage...
     pcmap[requires]="boost_coroutine boost_log_setup boost_log boost_timer boost_type_erasure boost_wave boost_atomic boost_chrono boost_container boost_fiber boost_context boost_contract boost_date_time boost_filesystem boost_graph_parallel boost_graph boost_mpi boost_iostreams boost_locale boost_math_c99f boost_math_c99l boost_math_c99 boost_math_tr1f boost_math_tr1l boost_math_tr1 boost_prg_exec_monitor boost_program_options boost_random boost_regex boost_wserialization boost_serialization boost_stacktrace_addr2line boost_stacktrace_basic boost_stacktrace_noop boost_system boost_thread boost_unit_test_framework boost_test_exec_monitor boost_exception"
 
-    pcFileWriteOverallPackageFile "${prefix}/lib/pkgconfig/boost-cxx.pc" pcmap
+    pcFileWriteOverallPackageFile "${prefix}/lib/pkgconfig/boost.pc" pcmap
+
+}
+
+function boostInstallModuleFileLua {
+
+    local module_preamble=${script_dir}/module_preamble.lua
+    local module_boilerplate=${script_dir}/module_boilerplate.lua
+
+    # Destination
+    local module_dir=$(moduleInstallDirectory)
+
+    if [[ ! -d ${module_dir}/boost ]]; then
+        mkdir ${module_dir}/boost
+    fi
+
+    local module_file=${module_dir}/boost/${BOOST_VERSION}.lua
+
+    # Copy add update the template
+
+    cat ${module_preamble}     > ${module_file}
+    cat ${module_boilerplate} >> ${module_file}
+
+    module use ${module_dir}
+    module load boost/${BOOST_VERSION}
+
+    cc --cray-print-opts
+
+    module unload boost
+    module unuse ${module_dir}
 
 }
 
@@ -174,7 +207,8 @@ function boostTest {
     local version=${BOOST_VERSION}
 
     printf "BOOST test for %s\n" "${prgenv}"
-    module restore $(moduleCollection ${prgenv})
+
+    module load ${prgenv}
     module use ${module_use}
 
     module load boost/${version}

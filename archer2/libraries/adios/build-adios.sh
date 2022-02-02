@@ -14,13 +14,13 @@ function main {
 
     # Overall prefix must be supplied by command line
 
-    local install_root=${prefix}/libs/adios/${ADIOS_VERSION}
+    local install_root=${install_root_libs}/adios/${ADIOS_VERSION}
 
     ${build_cce} && adiosBuildCray ${install_root}
     ${build_gnu} && adiosBuildGnu  ${install_root}
     ${build_amd} && adiosBuildAocc ${install_root}
 
-    adiosInstallModuleFile
+    adiosInstallModuleFileLua
     adiosInstallationTest
 
     printf "ARCHER2: Installation test of adios successful\n"
@@ -28,9 +28,22 @@ function main {
 
 function adiosLoadModuleDependencies {
 
-    moduleUseLibs
-    module load cray-hdf5-parallel/${CRAY_HDF5_PARALLEL_VERSION}
+    # Adios v2 requires cmake >= 3.12
 
+    moduleUseLibs
+    module load cmake
+    # While AOCC pending pkgconfig fix
+    #module load cray-hdf5-parallel/${CRAY_HDF5_PARALLEL_VERSION}
+    module load epcc-cray-hdf5-parallel/${CRAY_HDF5_PARALLEL_VERSION}
+}
+
+function adiosUnloadModuleDependencies {
+
+
+    module unload epcc-cray-hdf5-parallel
+    # While AOCC pending pkgconfig fix
+    #module unload cray-hdf5-parallel
+    module unload cmake
 }
 
 function adiosBuildAocc {
@@ -38,8 +51,9 @@ function adiosBuildAocc {
     local install_root=${1}
     
     # restore pe/compiler
-    module restore $(moduleCollection PrgEnv-aocc)
-    module swap aocc aocc/${PE_AOCC_AOCC_VERSION}
+
+    module load PrgEnv-aocc
+    module load aocc/${PE_AOCC_AOCC_VERSION}
 
     adiosLoadModuleDependencies
     module list
@@ -49,14 +63,16 @@ function adiosBuildAocc {
     amd_prefix=${amd_root}/${amd_version}
 
     adiosBuild ${amd_prefix}
+
+    adiosUnloadModuleDependencies
 }
 
 function adiosBuildCray {
 
     local install_root=${1}
 
-    module restore $(moduleCollection PrgEnv-cray)
-    module swap cce cce/${PE_CRAY_CCE_VERSION}
+    module load PrgEnv-cray
+    module load cce/${PE_CRAY_CCE_VERSION}
 
     adiosLoadModuleDependencies
     module list
@@ -66,14 +82,16 @@ function adiosBuildCray {
     cray_prefix=${cray_root}/${cray_version}
 
     adiosBuild ${cray_prefix}
+
+    adiosUnloadModuleDependencies
 }
 
 function adiosBuildGnu {    
 
     local install_root=${1}
 
-    module restore $(moduleCollection PrgEnv-gnu)
-    module swap gcc gcc/${PE_GNU_GCC_VERSION}
+    module load PrgEnv-gnu
+    module load gcc/${PE_GNU_GCC_VERSION}
 
     adiosLoadModuleDependencies
     module list
@@ -83,6 +101,8 @@ function adiosBuildGnu {
     gnu_prefix=${gnu_root}/${gnu_version}
 
     adiosBuild ${gnu_prefix}
+
+    adiosUnloadModuleDependencies
 }
 
 function adiosBuild {
@@ -107,6 +127,34 @@ function adiosBuildMPI {
 
     ./sh/adios.sh --jobs=16 --prefix=${prefix} --version=${ADIOS_VERSION}
 
+}
+
+function adiosInstallModuleFileLua {
+
+    local module_preamble=${script_dir}/module_preamble.lua
+    local module_boilerplate=${script_dir}/module_boilerplate.lua
+
+    # Destination
+    local module_dir=$(moduleInstallDirectory)
+
+    if [[ ! -d ${module_dir}/adios ]]; then
+        mkdir ${module_dir}/adios
+    fi
+
+    local module_file=${module_dir}/adios/${ADIOS_VERSION}.lua
+
+    # Copy add update the template
+
+    cat ${module_preamble}     > ${module_file}
+    cat ${module_boilerplate} >> ${module_file}
+
+    module use ${module_dir}
+    module load adios/${ADIOS_VERSION}
+
+    cc --cray-print-opts
+
+    module unload adios
+    module unuse ${module_dir}
 }
 
 function adiosInstallModuleFile {
@@ -153,7 +201,8 @@ function adiosTest {
     local module_use=$(moduleInstallDirectory)
 
     printf "Adios test for %s\n" "${prgenv}"
-    module restore $(moduleCollection ${prgenv})
+
+    module load ${prgenv}
     module use ${module_use}
 
     module load adios/${ADIOS_VERSION}
@@ -166,6 +215,7 @@ function adiosTest {
     make
     
     cd -
+    module unload adios
 }
 
 main

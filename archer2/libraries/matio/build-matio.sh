@@ -14,13 +14,13 @@ function main {
 
     # Overall prefix must be supplied by command line
 
-    local install_root=${prefix}/libs/matio/${MATIO_VERSION}
+    local install_root=${install_root_libs}/matio/${MATIO_VERSION}
 
     ${build_amd} && matioBuildAocc ${install_root}
     ${build_cce} && matioBuildCray ${install_root}
     ${build_gnu} && matioBuildGnu  ${install_root}
 
-    matioInstallModuleFile
+    matioInstallModuleFileLua
     matioInstallationTest
 
     printf "ARCHER2: Matio installation was successful\n"
@@ -31,8 +31,10 @@ function matioBuildAocc {
     local install_root=${1}
     
     # restore pe/compiler
-    module restore $(moduleCollection PrgEnv-aocc)
-    module swap aocc aocc/${PE_AOCC_AOCC_VERSION}
+
+    module load PrgEnv-aocc
+    module load aocc/${PE_AOCC_AOCC_VERSION}
+
     module list
 
     amd_version=$(moduleToCompilerMajorMinor)
@@ -46,8 +48,9 @@ function matioBuildCray {
 
     local install_root=${1}
 
-    module restore $(moduleCollection PrgEnv-cray)
-    module swap cce cce/${PE_CRAY_CCE_VERSION}
+    module load PrgEnv-cray
+    module load cce/${PE_CRAY_CCE_VERSION}
+
     module list
 
     cray_version=$(moduleToCompilerMajorMinor)
@@ -61,8 +64,9 @@ function matioBuildGnu {
 
     local install_root=${1}
 
-    module restore $(moduleCollection PrgEnv-gnu)
-    module swap gcc gcc/${PE_GNU_GCC_VERSION}
+    module load PrgEnv-gnu
+    module load gcc/${PE_GNU_GCC_VERSION}
+
     module list
 
     gnu_version=$(moduleToCompilerMajorMinor)
@@ -97,6 +101,38 @@ function matioBuildSerial {
 
     ./sh/tpsl/matio.sh --jobs=16 --prefix=${prefix} \
 		       --version=${MATIO_VERSION}
+
+}
+
+function matioInstallModuleFileLua {
+
+    local module_preamble=${script_dir}/module_preamble.lua
+    local module_boilerplate=${script_dir}/module_boilerplate.lua
+
+    # Destination
+    local module_dir=$(moduleInstallDirectory)
+
+    if [[ ! -d ${module_dir}/matio ]]; then
+        mkdir ${module_dir}/matio
+    fi
+
+    local module_file=${module_dir}/matio/${MATIO_VERSION}.lua
+
+    # Copy add update the template
+
+    cat ${module_preamble}     > ${module_file}
+    cat ${module_boilerplate} >> ${module_file}
+
+    # Smoke test module
+
+    module use ${module_dir}
+    module load matio/${MATIO_VERSION}
+
+    cc --cray-print-opts
+
+    module unload matio
+    module unuse ${module_dir}
+
 
 }
 
@@ -140,7 +176,8 @@ function matioTest {
     local version=${MATIO_VERSION}
 
     printf "Matio test for %s\n" "${prgenv}"
-    module restore $(moduleCollection ${prgenv})
+
+    module load ${prgenv}
     module use ${module_use}
 
     module load matio/${version}

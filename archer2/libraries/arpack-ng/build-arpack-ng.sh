@@ -14,13 +14,13 @@ function main {
 
     # Overall prefix must be supplied by command line
 
-    local install_root=${prefix}/libs/arpack-ng/${ARPACK_VERSION}
+    local install_root=${install_root_libs}/arpack-ng/${ARPACK_VERSION}
 
     ${build_amd} && arpackBuildAocc ${install_root}
     ${build_cce} && arpackBuildCray ${install_root}
     ${build_gnu} && arpackBuildGnu  ${install_root}
     
-    arpackInstallModuleFile
+    arpackInstallModuleFileLua
     arpackInstallationTest ${install_root}
 
     printf "ARCHER2: Arpack installation test completed successfully\n"
@@ -31,8 +31,10 @@ function arpackBuildAocc {
     local install_root=${1}
 
     # restore pe/compiler
-    module restore $(moduleCollection PrgEnv-aocc)
-    module swap aocc aocc/${PE_AOCC_AOCC_VERSION}
+
+    module load PrgEnv-aocc
+    module load aocc/${PE_AOCC_AOCC_VERSION}
+
     module list
 
     amd_version=$(moduleToCompilerMajorMinor)
@@ -46,8 +48,9 @@ function arpackBuildCray {
 
     local install_root=${1}
 
-    module restore $(moduleCollection PrgEnv-cray)
-    module swap cce cce/${PE_CRAY_CCE_VERSION}
+    module load PrgEnv-cray
+    module load cce/${PE_CRAY_CCE_VERSION}
+
     module list
 
     cray_version=$(moduleToCompilerMajorMinor)
@@ -61,8 +64,9 @@ function arpackBuildGnu {
 
     local install_root=${1}
 
-    module restore $(moduleCollection PrgEnv-gnu)
-    module swap gcc gcc/${PE_GNU_GCC_VERSION}
+    module load PrgEnv-gnu
+    module load gcc/${PE_GNU_GCC_VERSION}
+
     module list
 
     gnu_version=$(moduleToCompilerMajorMinor)
@@ -134,9 +138,6 @@ function arpackPackageConfigFiles {
     # Here we declare the necessary information required to generate
     # pkgconfig files
 
-    # Note PKGCONFIG file is "arpack" to simplify environment
-    # in module file
-
     local prefix=${1}
     local prgEnv=$(peEnvLower)
     local ext="${prgEnv}"
@@ -151,7 +152,36 @@ function arpackPackageConfigFiles {
     pcmap[requires]="parpack_${extmpi} arpack_${ext}"
 
     pcRefactorPackageConfigFiles ${prefix} pcmap
-    pcFileWriteOverallPackageFile "${prefix}/lib/pkgconfig/arpack.pc" pcmap
+    pcFileWriteOverallPackageFile "${prefix}/lib/pkgconfig/arpack_ng.pc" pcmap
+}
+
+function arpackInstallModuleFileLua {
+
+    local module_preamble=${script_dir}/module_preamble.lua
+    local module_boilerplate=${script_dir}/module_boilerplate.lua
+
+    # Destination
+    local module_dir=$(moduleInstallDirectory)
+
+    if [[ ! -d ${module_dir}/arpack-ng ]]; then
+        mkdir ${module_dir}/arpack-ng
+    fi
+
+    local module_file=${module_dir}/arpack-ng/${ARPACK_VERSION}.lua
+
+    # Copy add update the template
+
+    cat ${module_preamble}     > ${module_file}
+    cat ${module_boilerplate} >> ${module_file}
+
+    module use ${module_dir}
+    module load arpack-ng/${ARPACK_VERSION}
+
+    cc --cray-print-opts
+
+    module unload arpack-ng
+    module unuse ${module_dir}
+
 }
 
 function arpackInstallModuleFile {
@@ -196,7 +226,8 @@ function arpackTest {
     local version="${ARPACK_VERSION}"
 
     printf "Arpack-NG test for %s\n" "${prgenv}"
-    module restore $(moduleCollection ${prgenv})
+
+    module load ${prgenv}
     module use ${module_use}
 
     module load arpack-ng/${version}

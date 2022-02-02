@@ -18,13 +18,13 @@ function main {
 
     # Overall prefix must be supplied by command line
 
-    local install_root=${prefix}/libs/metis/${METIS_VERSION}
+    local install_root=${install_root_libs}/metis/${METIS_VERSION}
 
     ${build_cce} && metisBuildCray ${install_root}
     ${build_gnu} && metisBuildGnu  ${install_root}
     ${build_amd} && metisBuildAocc ${install_root}
 
-    metisInstallModuleFile
+    metisInstallModuleFileLua
     metisInstallationTest
 }
 
@@ -33,8 +33,10 @@ function metisBuildAocc {
     local install_root=${1}
     
     # restore modules
-    module restore $(moduleCollection PrgEnv-aocc)
-    module swap aocc aocc/${PE_AOCC_AOCC_VERSION}
+
+    module load PrgEnv-aocc
+    module load aocc/${PE_AOCC_AOCC_VERSION}
+
     module list
 
     # use currently loaded compiler
@@ -49,8 +51,9 @@ function metisBuildCray {
 
     local install_root=${1}
 
-    module restore $(moduleCollection PrgEnv-cray)
-    module swap cce cce/${PE_CRAY_CCE_VERSION}
+    module load PrgEnv-cray
+    module load cce/${PE_CRAY_CCE_VERSION}
+
     module list
 
     cray_version=$(moduleToCompilerMajorMinor)
@@ -64,8 +67,9 @@ function metisBuildGnu {
 
     local install_root=${1}
 
-    module restore $(moduleCollection PrgEnv-gnu)
-    module swap gcc gcc/${PE_GNU_GCC_VERSION}
+    module load PrgEnv-gnu
+    module load gcc/${PE_GNU_GCC_VERSION}
+
     module list
 
     gnu_version=$(moduleToCompilerMajorMinor)
@@ -160,6 +164,36 @@ function metisPackageConfigFiles {
 
 }
 
+function metisInstallModuleFileLua {
+
+    local module_preamble=${script_dir}/module_preamble.lua
+    local module_boilerplate=${script_dir}/module_boilerplate.lua
+
+    # Destination
+    local module_dir=$(moduleInstallDirectory)
+
+    if [[ ! -d ${module_dir}/metis ]]; then
+	mkdir ${module_dir}/metis
+    fi
+
+    local module_file=${module_dir}/metis/${METIS_VERSION}.lua
+
+    # Copy add update the template
+
+    cat ${module_preamble}     > ${module_file}
+    cat ${module_boilerplate} >> ${module_file}
+
+    # Smoke test module
+
+    module use ${module_dir}
+    module load metis/${METIS_VERSION}
+
+    cc --cray-print-opts
+
+    module unload metis
+    module unuse ${module_dir}
+}
+
 function metisInstallModuleFile {
 
     local module_template=${script_dir}/modulefile.tcl
@@ -202,7 +236,7 @@ function metisTest {
 
     printf "Metis installation test for %s\n" "${prgenv}"
 
-    module restore $(moduleCollection ${prgenv})
+    module load ${prgenv}
     module use ${module_use}
 
     module load metis/${METIS_VERSION}
@@ -227,6 +261,8 @@ function metisTest {
     m2gmetis ${graph_dir}/metis.mesh /dev/null
 
     cd -
+    module unload metis
+    module unuse ${module_use}
 }
 
 main
