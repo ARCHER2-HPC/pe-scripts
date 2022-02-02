@@ -166,6 +166,7 @@ else
 
   local pkgconfig = pathJoin(productPath, "lib/pkgconfig")
   prepend_path("PE_" .. compilerEnv .. "_FIXED_PKGCONFIG_PATH", pkgconfig)
+  prepend_path("PKG_CONFIG_PATH", pkgconfig)
 
   -- bin is required
 
