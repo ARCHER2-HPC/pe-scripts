@@ -5,7 +5,7 @@
 family("adios")
 
 prereq_any("PrgEnv-cray", "PrgEnv-gnu", "PrgEnv-aocc")
-depends_on("epcc-cray-hdf5-parallel/1.12.0.3")
+depends_on("cray-hdf5-parallel")
 
 -- This is introspection; may want to set explicitly.
 
