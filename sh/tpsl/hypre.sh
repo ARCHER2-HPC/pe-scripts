@@ -9,6 +9,7 @@ PACKAGE=hypre
 VERSIONS='
   2.14.0:10cfcd555618137c194958f84f44724fece45b58c59002d1195fed354e2ca16c
   2.18.0:62591ac69f9cc9728bd6d952b65bcadd2dfe52b521081612609804a413f49b07
+  2.25.0:f9fc8371d91239fca694284dab17175bfda3821d7b7a871fd2e8f9d5930f303c
 '
 
 _pwd(){ CDPATH= cd -- $1 && pwd; }
@@ -28,6 +29,8 @@ tar xf hypre-$VERSION.tar.gz \
 cd hypre-$VERSION
 { patch -f -p1 <$top_dir/../patches/hypre-mpi-comm-f2c-interface.patch ;
   case $VERSION in
+    2.25.0)
+      printf "No patches\n";;
     2.14.0)
       patch -f -p1 <$top_dir/../patches/hypre-hopscotch-no-builtins.patch ;
       patch -f -p1 <$top_dir/../patches/hypre-struct-mv-pragmas.patch ;;
