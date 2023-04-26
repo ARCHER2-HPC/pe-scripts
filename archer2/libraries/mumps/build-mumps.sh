@@ -16,9 +16,9 @@ function main {
 
     local install_root=${install_root_libs}/mumps/${MUMPS_VERSION}
 
-    ${build_cce} && mumpsBuildCray ${install_root}
-    ${build_gnu} && mumpsBuildGnu  ${install_root}
-    ${build_amd} && mumpsBuildAocc ${install_root}
+    [[ ${build_cce} ]] && mumpsBuildCray ${install_root}
+    [[ ${build_gnu} ]] && mumpsBuildGnu  ${install_root}
+    [[ ${build_amd} ]] && mumpsBuildAocc ${install_root}
 
     mumpsInstallModuleFileLua
     mumpsInstallationTest
@@ -197,6 +197,8 @@ function mumpsInstallModuleFileLua {
 
     cat ${module_preamble}     > ${module_file}
     cat ${module_boilerplate} >> ${module_file}
+
+    sed -i "s/SCOTCH_VERSION_TAG/${SCOTCH_VERSION}/" ${module_file}
 
     module use ${module_dir}
     module load mumps/${MUMPS_VERSION}
