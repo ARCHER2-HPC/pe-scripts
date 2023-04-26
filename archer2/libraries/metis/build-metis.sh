@@ -26,6 +26,8 @@ function main {
 
     metisInstallModuleFileLua
     metisInstallationTest
+
+    printf "Installation of metis complete\n"
 }
 
 function metisBuildAocc {
