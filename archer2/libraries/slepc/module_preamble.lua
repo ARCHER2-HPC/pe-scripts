@@ -3,7 +3,7 @@
 family("slepc")
 
 prereq_any("PrgEnv-cray", "PrgEnv-gnu", "PrgEnv-aocc")
-depends_on("petsc/3.14.2")
+depends_on("petsc/PETSC_VERSION_TAG")
 
 -- This is introspection; may want to set explicitly.
 
