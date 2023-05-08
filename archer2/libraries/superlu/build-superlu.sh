@@ -7,7 +7,6 @@ script_dir="$(dirname "${script}")"
 script_root="$(dirname "${script%/*/*}")"
 
 source ${script_root}/pkgconfig-lib.sh
-source ${script_root}/versions.sh
 source ${script_root}/command_line.sh
 
 function main {
@@ -16,9 +15,9 @@ function main {
 
     local install_root=${install_root_libs}/superlu/${SUPERLU_VERSION}
 
-    ${build_amd} && superluBuildAocc ${install_root}
-    ${build_cce} && superluBuildCray ${install_root}
-    ${build_gnu} && superluBuildGnu  ${install_root}
+    [[ ${build_amd} ]] && superluBuildAocc ${install_root}
+    [[ ${build_cce} ]] && superluBuildCray ${install_root}
+    [[ ${build_gnu} ]] && superluBuildGnu  ${install_root}
 
     superluInstallModuleFileLua
     superluInstallationTest

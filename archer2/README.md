@@ -54,7 +54,24 @@ Modulefiles are installed to
 
 ## Library modules (formerly TPSL)
 
-Some details for each package will appear here.
+Some details for each package appear in the respective directories.
+
+### Post upgrade 2023
+
+| Package      | Version  | Dependencies            | OpenMP? | MPI? |
+|--------------|----------|-------------------------|---------|------|
+| hypre        | 2.25.0   | none                    | yes     | yes  |
+| matio        | 1.5.23   | none                    | no      | no   |
+| metis        | 5.1.0    | none                    | yes     | no   |
+| mumps        | 5.5.1    | metis, parmetis, scotch | yes     | yes  |
+| parmetis     | 4.0.3    | none                    | yes     | yes  |
+| scotch       | 7.0.3    | none                    | no      | yes  |
+| sundials     | 4.1.0    | none                    | yes     | yes  |
+| superlu      | 5.3.0    | none                    | no      | no   |
+| superlu-dist | 8.1.2    | metis, parmetis         | yes     | yes  |
+
+
+### Pre-upgrade 2023
 
 | Package      | Version  | Dependencies            | OpenMP? | MPI? |
 |--------------|----------|-------------------------|---------|------|
@@ -69,7 +86,26 @@ Some details for each package will appear here.
 | superlu      | 5.2.2    | none                    | no      | no   |
 | superlu-dist | 6.4.0    | metis, parmetis         | yes     | yes  |
 
+
 ## Library modules (others via pe-scripts)
+
+### Post upgrade 2023
+
+| Package      | Version  | Dependencies               | OpenMP? | MPI? |
+|--------------|----------|----------------------------|---------|------|
+| adios        | PENDING  | cray-hdf5-parallel         | no      | yes  |
+| boost        | 1.81.0   | none                       | no      | yes  |
+| petsc        | 3.18.5   | superlu, superlu-dist,     | no      | yes  |
+|              |          | metis, parmetis, scotch,   |         |      |
+|              |          | mumps, hypre,              |         |      |
+|              |          | cray-hdf5-parallel         |         |      |
+| slepc        | 3.18.3   | petsc                      | no      | yes  |
+| trilinos     | 13.4.1   | cray-hdf5-parallel         | yes     | yes  |
+|              |          | cray-netcdf-hdf5parallel   |         |      |
+|              |          | tpsl (bar hypre,sundials   |         |      |
+|              |          | and glm) boost             |         |      |
+
+### Pre upgrade 2023
 
 | Package      | Version  | Dependencies               | OpenMP? | MPI? |
 |--------------|----------|----------------------------|---------|------|
@@ -84,6 +120,7 @@ Some details for each package will appear here.
 |              |          | cray-netcdf-hdf5parallel   |         |      |
 |              |          | tpsl (bar hypre,sundials)  |         |      |
 |              |          | boost                      |         |      |
+
 
 ## Library modules (other CSE)
 

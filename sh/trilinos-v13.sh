@@ -2,6 +2,7 @@
 #
 # Build and install the Trilinos library.
 #
+# Version 13.x
 # Copyright 2019, 2020, 2021 Hewlett Packard Enterprise Development LP.
 ####
 
@@ -9,6 +10,7 @@ PACKAGE=trilinos
 VERSIONS='
   12.14.1:10a88f034b8f91904a98970c00fa88b7f4acd59429d2c4870a60c6e297fc044a
   12.18.1:f170a3e92dc8cca338606223fbbce20ee482b863c607bb9bac6730656aec8c69
+  13.4.1:
 '
 
 
@@ -18,25 +20,7 @@ top_dir=`_dirname "$0"`
 
 . $top_dir/.preamble.sh
 
-fn_trilinos_git_checkout(){
-  dir="$1"
-  case $VERSION in
-    12.14.1)
-      # Note: Use shallow clone to save ~80% of bandwidth
-      git clone --branch trilinos-release-12-14-1 --depth 1 https://github.com/Trilinos/Trilinos.git $dir \
-        && (cd $dir/packages \
-              && git clone https://github.com/Trilinos/ForTrilinos.git \
-              && (cd ForTrilinos ; git checkout 808293ee1a751f0413955a7e0cae710414cc330e))
-      ;;
-    12.18.1)
-      git clone --branch trilinos-release-12-18-1 --depth 1 https://github.com/Trilinos/Trilinos.git $dir \
-        && (cd $dir/packages \
-              && git clone https://github.com/Trilinos/ForTrilinos.git \
-              && (cd ForTrilinos ; git checkout 66c45b1d1491af75146abe3b611147fd896a4f56))
-      ;;
-    *) return 1 ;;              # cannot checkout for this version
-  esac
-}
+
 
 ##
 ## Requirements:
@@ -44,7 +28,7 @@ fn_trilinos_git_checkout(){
 ##  - MPI
 ##  - BLAS
 ##  - ScaLAPACK
-##  - TPSL (superlu, superlu-dist, metis, parmetis, scotch, mumps, glm, matio)
+##  - TPSL (superlu, superlu-dist, metis, parmetis, scotch, mumps, matio)
 ##  - boost
 ##  - hdf5
 ##  - netcdf
@@ -82,6 +66,7 @@ fn_check_includes SuperLU_DIST superlu_dist_config.h
 fn_check_includes Scotch scotch.h
 fn_check_includes PT-Scotch ptscotch.h
 fn_check_includes MUMPS mumps_c_types.h
+#fn_check_includes GLM glm/glm.hpp
 fn_check_includes Matio matio.h
 fn_check_includes HDF5 hdf5.h
 fn_check_includes NetCDF netcdf.h
@@ -91,61 +76,11 @@ fn_check_includes Boost::chrono boost/chrono.hpp
 fn_check_includes Boost::program_options boost/program_options.hpp
 fn_check_includes Boost::system boost/system/error_code.hpp
 
-test -e trilinos-$VERSION-Source.tar.xz \
-  || fn_create_git_tarball trilinos-$VERSION-Source \
-  || fn_error "could not fetch source"
-echo "$SHA256SUM  trilinos-$VERSION-Source.tar.xz" | sha256sum --check \
-  || fn_error "source hash mismatch"
-printf "unpacking source" \
-  && tar --checkpoint=1000 --checkpoint-action=exec='printf .' \
-         -xf trilinos-$VERSION-Source.tar.xz \
-  && echo "done" \
-  || fn_error "could not untar source"
+# ASSUME directory exists
+#mv Trilinos-trilinos-release-13-4-1 trilinos-${VERSION}
 
-mv trilinos-${VERSION}-Source trilinos-${VERSION}
 cd trilinos-$VERSION
 
-patches="
-  trilinos-fortran-arg-mismatch.patch
-  trilinos-amesos-superlu-dist-6.4.patch
-  trilinos-amesos2-adapters-cce.patch
-  trilinos-boostlib-tpl-lib-list.patch
-  trilinos-stk-platform.patch
-  trilinos-fei-test-utils.patch
-"
-fn_versgte $VERSION 12.14.1 \
-  || patches="
-       trilinos-amesos2-mumps-fix.patch
-       trilinos-kokkos-bitops-cce.patch
-       trilinos-kokkos-traits-cce.patch
-       trilinos-stk-mallinfo.patch
-       trilinos-stk-util-env.patch
-       trilinos-sundance-vector.patch
-       trilinos-sundance-vecmat.patch
-       trilinos-superlu5.patch
-       trilinos-superlu-dist-5.4-fix.patch
-       trilinos-epetraext-hdf5-1.10-compat.patch
-       trilinos-fortrilinos-line-length.patch
-       trilinos-fortrilinos-gcc8.patch
-       $patches"
-fn_versgte $VERSION 12.18.1 \
-  || {
-  case $compiler:$GCC_VERSION in
-    crayclang:*|gnu:9.*)
-      patches="$patches
-        trilinos-omp-shared-epetra.patch
-        trilinos-omp-shared-stk.patch"
-      ;;
-  esac
-  patches="
-    trilinos-stk-classic-cv.patch
-    trilinos-stk-classic-platform.patch
-    $patches" ; }
-{ echo "Applying patches:"; for p in $patches ; do echo "  $p"; done ; }
-for p in $patches ; do
-  patch -f -p1 <$top_dir/../patches/$p \
-    || fn_error "patching failed"
-done
 
 trilinos_enable_packages="
   Amesos
@@ -156,22 +91,17 @@ trilinos_enable_packages="
   Epetra
   EpetraExt
   FEI
-  ForTrilinos
   Galeri
-  GlobiPack
   Ifpack
   Ifpack2
   Intrepid
   Isorropia
   Kokkos
   Komplex
-  Mesquite
   ML
   Moertel
-  MOOCHO
   MueLu
   NOX
-  OptiPack
   Pamgen
   Phalanx
   Piro
@@ -188,10 +118,8 @@ trilinos_enable_packages="
   STKUtil
   Stokhos
   Stratimikos
-  Sundance
   Teko
   Teuchos
-  ThreadPool
   Thyra
   Tpetra
   TrilinosCouplings
@@ -215,42 +143,32 @@ Amesos2_ENABLE_Basker:BOOL=ON,\
 Amesos2_ENABLE_MUMPS:BOOL=ON"
 epetra_OPTIONS="Epetra_ENABLE_THREADS:BOOL=ON"
 ifpack_OPTIONS="Ifpack_ENABLE_METIS:BOOL=OFF"
-kokkos_OPTIONS="Kokkos_ENABLE_Serial:BOOL=ON,Kokkos_ENABLE_OpenMP:BOOL=ON"
+kokkos_OPTIONS="Kokkos_ENABLE_SERIAL:BOOL=ON,Kokkos_ENABLE_OPENMP:BOOL=ON"
+
+# MueLu
+muelu_OPTIONS="MueLu_ENABLE_TESTS:STRING=OFF,MueLu_ENABLE_EXAMPLES:STRING=OFF,MueLu_ENABLE_Kokkos_Refactor:STRING=ON"
+
+# Following advice from configure stage: required as Kokkos_SERIAL is set.
+tpetra_OPTIONS="Tpetra_INST_SERIAL:BOOL=ON"
+
 # Use ParMETIS in ML and Zoltan, instead of METIS
-ml_OPTIONS="ML_ENABLE_METIS:BOOL=OFF"
-case $VERSION in
-  12.12.1) ml_OPTIONS="ML_ENABLE_SuperLU:BOOL=ON,$ml_OPTIONS" ;;
-  # Version 12.14 ML and ShyLU support only SuperLU < 5.0
-  *) ml_OPTIONS="ML_ENABLE_SuperLU:BOOL=OFF,$ml_OPTIONS"
-     shylu_OPTIONS="ShyLU_DDBDDC_ENABLE_SuperLU:BOOL=OFF" ;;
-esac
-# According to RELEASE_NOTES for 11.10: "It it is not advisable to enable
-# both [STK and STKClassic] in a single build of Trilinos"
-stk_OPTIONS="Trilinos_ENABLE_STKClassic:BOOL=OFF"
+# ML supports only SuperLU < 5.0
+ml_OPTIONS="ML_ENABLE_METIS:BOOL=OFF, ML_ENABLE_SuperLU:BOOL=OFF"
 zoltan_OPTIONS="Zoltan_ENABLE_METIS:BOOL=OFF,Zoltan_ENABLE_F90INTERFACE:BOOL=ON"
+
 # CCE aborts when compiling one of Zoltan2's source if OpenMP is enabled.
-zoltan2_OPTIONS="Zoltan2_ENABLE_OpenMP:BOOL=OFF"
+#zoltan2_OPTIONS="Zoltan2_ENABLE_OpenMP:BOOL=OFF"
+
 # Workaround for https://github.com/trilinos/Trilinos/issues/244
-zoltan2_OPTIONS="$zoltan2_OPTIONS,Zoltan2_ENABLE_Scotch:BOOL=OFF"
+#zoltan2_OPTIONS="$zoltan2_OPTIONS,Zoltan2_ENABLE_Scotch:BOOL=OFF"
 
 : ${CRAY_CPU_TARGET=`uname -m`}
 case "$compiler" in
   crayclang)
     FFLAGS="-ef -hnocaf $FFLAGS"
     ;;
-  cray)
-    FFLAGS="-ef -hnocaf $FFLAGS"
-    # 1836 and 1838 to suppress warnings about LaTeX tables embedded
-    # in comments.
-    CFLAGS="-hnodwarf -hnomessage=554:511:10144:1836:1838 $CFLAGS"
-    # 12489 to suppress warnings about constexpr.
-    CXXFLAGS="-hnomessage=10143:12489 $CXXFLAGS"
-    ;;
   gnu)
     FFLAGS="$FFLAGS"
-    ;;
-  intel)
-    CPPFLAGS="-DGTEST_USE_OWN_TR1_TUPLE $CPPFLAGS"
     ;;
   aocc)
     LIBS="$LIBS${LIBS+ }-lm"
@@ -278,7 +196,6 @@ if test ${make_using_modules} -eq 1; then
   superlu_dist_libs=""
 else
   boost_dir=${prefix}
-  gml_dir=${prefix}
   matio_dir=${prefix}
   metis_dir=${prefix}
   mumps_dir=${prefix}
@@ -290,11 +207,13 @@ else
   parmetis_libs="parmetis;metis"
   mumps_libs="dmumps;zmumps;smumps;cmumps;mumps_common;esmumps;ptesmumps;parmetis;ptscotch;scotch;scotcherr;pord"
   scotch_libs="ptscotch;ptscotcherr;scotch;scotcherr"
-  superlu_libs="superlu superlu_3.0 superlu_4.0 superlu_4.1 superlu_4.2 superlu_4.3 superlu_5.0 superlu_5.1.1 superlu_5.2.1"
+  superlu_libs="superlu superlu_3.0 superlu_4.0 superlu_4.1 superlu_4.2 superlu_4.3 superlu_5.0 superlu_5.1.1 superlu_5.2.1 superlu_5.2.2"
   superlu_dist_libs="superludist superlu_dist superlu_dist_2.0 superlu_dist_2.5 superlu_dist_4.0"
 fi
 
-mkdir -p _build && cd _build
+
+mkdir -p "_build-${PE_ENV}" && cd "_build-${PE_ENV}"
+
 cat >configure-trilinos.sh <<EOF
 #!/bin/sh
 : \${CMAKE=`command -v cmake`}
@@ -345,7 +264,6 @@ unset DESTDIR # Prevent installing into anything but \$CMAKE_INSTALL_PREFIX
   -D TPL_SuperLU_INCLUDE_DIRS:FILEPATH=${superlu_dir}/include \\
   -D SuperLU_LIBRARY_DIRS:FILEPATH=${superlu_dir}/lib \\
   -D SuperLU_LIBRARY_NAMES="${superlu_libs}" \\
-  -D HAVE_SUPERLU_GLOBALLU_T_ARG:BOOL=YES \\
   -D TPL_ENABLE_SuperLUDist:BOOL=ON \\
   -D TPL_SuperLUDist_INCLUDE_DIRS:FILEPATH=${superlu_dist_dir}/include \\
   -D SuperLUDist_LIBRARY_DIRS:FILEPATH=${superlu_dist_dir}/lib \\
@@ -384,7 +302,7 @@ unset DESTDIR # Prevent installing into anything but \$CMAKE_INSTALL_PREFIX
   -D TPL_ENABLE_X11:BOOL=OFF \\
   -D TPL_ENABLE_MPI:BOOL=ON \\
   -D MPI_BASE_DIR:FILEPATH=$mpich \\
-  -D MPI_EXEC:STRING=\${MPIEXEC:-aprun} \\
+  -D MPI_EXEC:STRING=\${MPIEXEC:-srun} \\
   -D MPI_EXEC_NUMPROCS_FLAG:STRING="-n" \\
   -D CMAKE_INSTALL_PREFIX:PATH=$prefix \\
 EOF
@@ -400,46 +318,15 @@ EOF
   fi
 done
 
-# Flags for cross-compilation.  Many of the cmake checks for these
-# features require execution of code, which does not always work in
-# cross-compilation environments.  Provide default values here:
-cat >>configure-trilinos.sh <<EOF
-  -D HAVE_TEUCHOS_BLASFLOAT:BOOL=YES \\
-  -D LAPACK_SLAPY2_WORKS:BOOL=YES \\
-  -D HAVE_TEUCHOS_LAPACKLARND:BOOL=YES \\
-EOF
 
 # Include any additional cmake configuration options specified
+# SEACAS Supes kills aocc 3.2 Fortran so disable for now
 cat >>configure-trilinos.sh <<EOF
+  -D Trilinos_ENABLE_SEACASSupes:BOOL=OFF \\
   \$CMAKEFLAGS \\
   ..
 EOF
 
-# Additional configuration-level work that needs to be done for some compiler
-# environments.
-case $compiler in
-  cray|crayclang)
-    cat >>configure-trilinos.sh <<EOF
-# When compiling fortran code, cmake or trilinos likes to insert -i8
-# and -r8 compiler options for the intel compiler and mistakenly
-# applies the same flags when cce is being used.  I (bavier) have not
-# yet found a way to tell cmake how to use the appropriate commands
-# for Fortran linking.
-echo -n "Fixing CCE integer and real size compiler flags... "
-find . \( -name link.txt -or -name flags.make \) -print |	\\
-  xargs --no-run-if-empty sed -r --in-place=~~			\\
-  -e "s/-i8/-sinteger64/g"					\\
-  -e "s/-r8/-sreal64/g" ;
-echo "done"
-# Workaround for Bug 835225.  XXX: This overrides flags for all
-# objects in stk_mesh_base; ideally we would like to override the
-# flags for only the ElemElemGraph.ccp.o target.
-_flags=packages/stk/stk_mesh/stk_mesh/base/CMakeFiles/stk_mesh_base.dir/flags.make
-test -e \$_flags && \\
-  sed --in-place=~ "s/-hpic\(.*-hpic\)/\1/;s/-O[0-3]/-O0/g" \$_flags
-EOF
-    ;;
-esac
 cat >>configure-trilinos.sh <<EOF
 # Let the CrayPE compiler drivers determine whether libraries are
 # linked statically or dynamically.
@@ -448,23 +335,15 @@ find . -name link.txt |					\\
   xargs --no-run-if-empty sed --in-place=~		\\
   -e "s/-Wl,-B\(dynamic\|static\)//g" ;
 echo "done"
-# Work around linker errors about "undefined reference to __dlopen".
-# This seems to be caused by the particular linking order that cmake
-# produces, but can be worked around by leaving only the final
-# reference to libdl on the link line.  Also turn absolute references
-# into relative.
-find . -name link.txt -print |                         \\
-  xargs --no-run-if-empty sed --in-place=~~~           \\
-  -e ":a;s,\([^ ]*/libdl\.[^ ]*\)\(.*\1\),\2,;t a"     \\
-  -e "s,[^ ]*/libdl\.[^ ]*,-ldl,g" ;
 EOF
+
 
 test "$?" = "0" \
   && chmod +x configure-trilinos.sh \
   && ./configure-trilinos.sh \
   || fn_error "configuration failed"
-make --jobs=$make_jobs install \
-  || fn_error "build failed"
+make --jobs=${make_jobs}
+#make --jobs=$make_jobs install || fn_error "build failed"
 
 
 # Local Variables:

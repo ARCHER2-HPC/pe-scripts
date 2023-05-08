@@ -4,14 +4,14 @@ family("trilinos")
 
 prereq_any("PrgEnv-cray", "PrgEnv-gnu", "PrgEnv-aocc")
 
-depends_on("glm/0.9.9.6")
+-- not depends_on("glm/0.9.9.6")
 depends_on("boost/1.72.0")
-depends_on("matio/1.5.18")
+depends_on("matio/1.5.23")
 depends_on("mumps/5.3.5")
 depends_on("superlu/5.2.2")
 depends_on("superlu-dist/6.4.0")
-depends_on("epcc-cray-hdf5-parallel/1.12.0.3")
-depends_on("epcc-cray-netcdf-hdf5parallel")
+depends_on("cray-hdf5-parallel")
+depends_on("cray-netcdf-hdf5parallel")
 
 -- This is introspection; may want to set explicitly.
 

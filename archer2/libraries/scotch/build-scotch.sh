@@ -7,7 +7,6 @@ script_dir="$(dirname "${script}")"
 script_root="$(dirname "${script%/*/*}")"
 
 source ${script_root}/pkgconfig-lib.sh
-source ${script_root}/versions.sh
 source ${script_root}/command_line.sh
 
 function main {
@@ -251,9 +250,9 @@ function scotchInstallModuleFile {
 
 function scotchInstallationTest {
 
-    ${test_cce} && scotchTest PrgEnv-cray
-    ${test_gnu} && scotchTest PrgEnv-gnu
-    ${test_amd} && scotchTest PrgEnv-aocc
+    [[ ${test_cce} ]] && scotchTest PrgEnv-cray
+    [[ ${test_gnu} ]] && scotchTest PrgEnv-gnu
+    [[ ${test_amd} ]] && scotchTest PrgEnv-aocc
 
 }
 
