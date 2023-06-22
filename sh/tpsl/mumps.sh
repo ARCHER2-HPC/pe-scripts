@@ -10,6 +10,7 @@ VERSIONS='
   5.1.2:eb345cda145da9aea01b851d17e54e7eef08e16bfa148100ac1f7f046cd42ae9
   5.2.1:d988fc34dfc8f5eee0533e361052a972aa69cc39ab193e7f987178d24981744a
   5.3.5:e5d665fdb7043043f0799ae3dbe3b37e5b200d1ab7a6f7b2a4e463fd89507fa4
+  5.5.1:1abff294fa47ee4cfd50dfd5c595942b72ebfcedce08142a75a99ab35014fa15
 '
 
 _pwd(){ CDPATH= cd -- $1 && pwd; }
@@ -111,7 +112,7 @@ EOF
 test "$?" = "0" \
   && mkdir -p "$prefix/lib" "$prefix/include" \
   || fn_error "configuration failed"
-make --jobs=$make_jobs alllib \
+make --jobs=$make_jobs all \
   || fn_error "build failed"
 cp lib/lib*.a "$prefix/lib" \
   && cp include/*.h "$prefix/include" \

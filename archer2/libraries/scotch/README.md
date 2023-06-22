@@ -2,11 +2,21 @@
 
 ## Build
 
-The single installation generates both serial `scotch` and parallel `ptscotch` under
-the same banner of `scotch`. E.g.,
+The single installation generates both serial `scotch` and parallel
+`ptscotch` under the same banner of `scotch`. E.g.,
 ```
+$ salloc --nodes=1 --time=00:30:00 --partition=standard --qos=standard
 $ bash ./archer2/libraries/scotch/build-scotch.sh --prefix=/work/y07/shared
 ```
+
+Note that v6 and v7 have different baseline build scripts in `./sh/tpsl/scotch.sh` and `./sh/tpsl/scotchv7.sh` respectively. The version 7 has moved to the
+`cmake` build route, which has the advantage that the testing is much
+easier, but the disadvantage that it doesn't handle the `libscotchmetis`
+build so well (it would have to look more like the v6 build without
+tests). So the `libscotchmetis` build in v7 is switched off entirely.
+This prevent collisions between the scotchmetis versions and the true
+metis and partmetis versions in places where both are active (e.g., PETSc).
+
 
 ## Module
 

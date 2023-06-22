@@ -5,7 +5,7 @@ family("mumps")
 prereq_any("PrgEnv-cray", "PrgEnv-gnu", "PrgEnv-aocc")
 depends_on("metis/5.1.0")
 depends_on("parmetis/4.0.3")
-depends_on("scotch/6.1.0")
+depends_on("scotch/SCOTCH_VERSION_TAG")
 
 -- This is introspection; may want to set explicitly.
 

@@ -32,17 +32,12 @@ function adiosLoadModuleDependencies {
 
     moduleUseLibs
     module load cmake
-    # While AOCC pending pkgconfig fix
-    #module load cray-hdf5-parallel/${CRAY_HDF5_PARALLEL_VERSION}
-    module load epcc-cray-hdf5-parallel/${CRAY_HDF5_PARALLEL_VERSION}
+    module load cray-hdf5-parallel/${CRAY_HDF5_PARALLEL_VERSION}
 }
 
 function adiosUnloadModuleDependencies {
 
-
-    module unload epcc-cray-hdf5-parallel
-    # While AOCC pending pkgconfig fix
-    #module unload cray-hdf5-parallel
+    module unload cray-hdf5-parallel
     module unload cmake
 }
 

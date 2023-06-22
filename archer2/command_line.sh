@@ -5,9 +5,12 @@ set -e
 # Switch off paging (esp. for long listings)
 export LMOD_PAGER="None"
 
+# Library versions
+source $(pwd)/archer2/versions.sh
+
 # Default location, PE
 cse_root=/work/y07/shared
-cpe_version=21.04
+cpe_version=22.12
 
 # Common functions plus command line argument processing
 

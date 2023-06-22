@@ -7,7 +7,6 @@ script_dir="$(dirname "${script}")"
 script_root="$(dirname "${script%/*/*}")"
 
 source ${script_root}/pkgconfig-lib.sh
-source ${script_root}/versions.sh
 source ${script_root}/command_line.sh
 
 function main {
@@ -90,10 +89,10 @@ function boostBuild {
     # Eliminate all shared libraries for now
     IFS="." read -r -a mmp <<< "${BOOST_VERSION}"
 
-    rm ${prefix}/lib/lib*.so
-    rm ${prefix}/lib/lib*.so.${mmp[0]}
-    rm ${prefix}/lib/lib*.so.${mmp[0]}.${mmp[1]}
-    rm ${prefix}/lib/lib*.so.${mmp[0]}.${mmp[1]}.${mmp[2]}
+    rm -f ${prefix}/lib/lib*.so
+    rm -f ${prefix}/lib/lib*.so.${mmp[0]}
+    rm -f ${prefix}/lib/lib*.so.${mmp[0]}.${mmp[1]}
+    rm -f ${prefix}/lib/lib*.so.${mmp[0]}.${mmp[1]}.${mmp[2]}
 
 }
 

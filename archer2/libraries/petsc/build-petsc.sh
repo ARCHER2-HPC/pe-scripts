@@ -7,7 +7,6 @@ script_dir="$(dirname "${script}")"
 script_root="$(dirname "${script%/*/*}")"
 
 source ${script_root}/pkgconfig-lib.sh
-source ${script_root}/versions.sh
 source ${script_root}/command_line.sh
 
 function main {
@@ -16,9 +15,9 @@ function main {
 
     local install_root=${install_root_libs}/petsc/${PETSC_VERSION}
 
-    ${build_cce} && petscBuildCray ${install_root}
-    ${build_gnu} && petscBuildGnu  ${install_root}
-    ${build_amd} && petscBuildAocc ${install_root}
+    [[ ${build_cce} ]] && petscBuildCray ${install_root}
+    [[ ${build_gnu} ]] && petscBuildGnu  ${install_root}
+    [[ ${build_amd} ]] && petscBuildAocc ${install_root}
 
     petscInstallModuleFileLua
     petscInstallationTest
@@ -31,8 +30,7 @@ function petscLoadModuleDependencies {
     moduleUseLibs
 
     # Pending AOCC pkgconfig fix...
-    #module load cray-hdf5-parallel/${CRAY_HDF5_PARALLEL_VERSION}
-    module load epcc-cray-hdf5-parallel/${CRAY_HDF5_PARALLEL_VERSION}
+    module load cray-hdf5-parallel/${CRAY_HDF5_PARALLEL_VERSION}
     module load hypre/${HYPRE_VERSION}
     module load mumps/${MUMPS_VERSION}
     module load superlu/${SUPERLU_VERSION}
@@ -42,8 +40,7 @@ function petscLoadModuleDependencies {
 
 function petscUnloadModuleDependencies {
 
-    module unload epcc-cray-hdf5-parallel/${CRAY_HDF5_PARALLEL_VERSION}
-    #module unload cray-hdf5-parallel/${CRAY_HDF5_PARALLEL_VERSION}
+    module unload cray-hdf5-parallel/${CRAY_HDF5_PARALLEL_VERSION}
     module unload hypre/${HYPRE_VERSION}
     module unload mumps/${MUMPS_VERSION}
     module unload superlu/${SUPERLU_VERSION}
@@ -165,6 +162,11 @@ function petscInstallModuleFileLua {
 
     cat ${module_preamble}     > ${module_file}
     cat ${module_boilerplate} >> ${module_file}
+
+    sed -i "s/HYPRE_VERSION_TAG/${HYPRE_VERSION}/" ${module_file}
+    sed -i "s/MUMPS_VERSION_TAG/${MUMPS_VERSION}/" ${module_file}
+    sed -i "s/SUPERLU_VERSION_TAG/${SUPERLU_VERSION}/" ${module_file}
+    sed -i "s/SUPERLU_DIST_VERSION_TAG/${SUPERLUDIST_VERSION}/" ${module_file}
 
     module use ${module_dir}
     module load petsc/${PETSC_VERSION}

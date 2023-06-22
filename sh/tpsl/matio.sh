@@ -9,6 +9,7 @@ PACKAGE=matio
 VERSIONS='
   1.5.13:feadb2f54ba7c9db6deba8c994e401d7a1a8e7afd0fe74487691052b8139e5cb
   1.5.18:5fad71a63a854d821cc6f4e8c84da837149dd5fb57e1e2baeffd85fa0f28fe25
+  1.5.23:9f91eae661df46ea53c311a1b2dcff72051095b023c612d7cbfc09406c9f4d6e
 '
 
 _pwd(){ CDPATH= cd -- $1 && pwd; }
@@ -50,8 +51,9 @@ fi
 make --jobs=$make_jobs \
   || fn_error "build failed"
 # Tests take a little too long (few minutes) for comfort, so comment out...
-#make --jobs=$make_jobs check \
-#  || fn_error "tests failed"
+# .. if not required
+make --jobs=$make_jobs check \
+  || fn_error "tests failed"
 make install \
   || fn_error "install failed"
 fn_checkpoint_tpsl

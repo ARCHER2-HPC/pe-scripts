@@ -12,6 +12,7 @@ VERSIONS='
   1.70.0:430ae8354789de4fd19ee52f3b1f739e1fba576f0aded0897c3c2bc00fb38778
   1.71.0:d73a8da01e8bf8c7eda40b4c84915071a8c8a0df4a6734537ddde4a8580524ee
   1.72.0:59c9b274bc451cf91a9ba1dd2c7fdcaf5d60b1b3aa83f2c9fa143417cc660722
+  1.81.0:71feeed900fbccca04a3b4f2f84a7c217186f28a940ed8b7ed4725986baf99fa
 '
 
 _pwd(){ CDPATH= cd -- $1 && pwd; }
@@ -97,9 +98,13 @@ EOF
   || fn_warn "not enabling Boost::Python"
 
 
+# Old download location.
+# http://dl.bintray.com/boostorg/release/..
+# New download location (2023)
+
 _VERSION=`echo $VERSION | tr . _`
 test -e boost_$_VERSION.tar.bz2 \
-  || $WGET http://dl.bintray.com/boostorg/release/$VERSION/source/boost_$_VERSION.tar.bz2 -O boost_$_VERSION.tar.bz2 \
+  || $WGET http://boostorg.jfrog.io/artifactory/main/release/$VERSION/source/boost_$_VERSION.tar.bz2 -O boost_$_VERSION.tar.bz2 \
   || fn_error "could not fetch source"
 echo "$SHA256SUM  boost_$_VERSION.tar.bz2" | sha256sum --check \
   || fn_error "source hash mismatch"

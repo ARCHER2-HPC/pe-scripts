@@ -16,9 +16,9 @@ function main {
 
     local install_root=${install_root_libs}/trilinos/${TRILINOS_VERSION}
 
-    ${build_amd} && trilinosBuildAocc ${install_root}
-    ${build_cce} && trilinosBuildCray ${install_root}
-    ${build_gnu} && trilinosBuildGnu  ${install_root}
+    [[ ${build_amd} ]] && trilinosBuildAocc ${install_root}
+    [[ ${build_gnu} ]] && trilinosBuildGnu  ${install_root}
+    [[ ${build_cce} ]] && trilinosBuildCray ${install_root}
 
     trilinosInstallModuleFileLua
     trilinosInstallationTest
@@ -28,28 +28,26 @@ function trilinosLoadModuleDependencies {
 
     moduleUseLibs
 
-    module load epcc-cray-hdf5-parallel
-    module load epcc-cray-netcdf-hdf5parallel
+    module load cray-hdf5-parallel
+    module load cray-netcdf-hdf5parallel
     
     module load mumps/${MUMPS_VERSION}
     module load superlu/${SUPERLU_VERSION}
     module load superlu-dist/${SUPERLUDIST_VERSION}
     module load matio/${MATIO_VERSION}
-    module load glm/${GLM_VERSION}
     module load boost/${BOOST_VERSION}
 }
 
 function trilinosUnloadModuleDependencies {
 
     module unload boost
-    module unload glm
     module unload matio
     module unload superlu-dist
     module unload superlu
     module unload mumps
 
-    module unload epcc-cray-netcdf-hdf5parallel
-    module unload epcc-cray-hdf5-parallel
+    module unload cray-netcdf-hdf5parallel
+    module unload cray-hdf5-parallel
 }
 
 function trilinosBuildAocc {
@@ -122,8 +120,16 @@ function trilinosBuild {
 
 function trilinosClean {
 
-    rm -rf trilinos-${TRILINOS_VERSION}
-
+    case ${TRILINOS_VERSION} in
+	12.*)
+	    rm -rf trilinos-${TRILINOS_VERSION}
+	    ;;
+	13.*)
+	    rm -rf trilinos-${TRILINOS_VERSION}/_build-CRAY
+	    rm -rf trilinos-${TRILINOS_VERSION}/_build-GNU
+	    rm -rf trilinos-${TRILINOS_VERSION}/_build-AOCC
+	    ;;
+    esac
 }
 
 function trilinosBuildMPIOpenMP {
@@ -132,8 +138,16 @@ function trilinosBuildMPIOpenMP {
 
     local prefix=${1}
 
-    ./sh/trilinos.sh --jobs=16 --prefix=${prefix} --openmp --modules \
-		  --version=${TRILINOS_VERSION}
+    case ${TRILINOS_VERSION} in
+	12.*)
+	    ./sh/trilinos.sh --jobs=16 --prefix=${prefix} --openmp --modules \
+		             --version=${TRILINOS_VERSION}
+	    ;;
+	13.*)
+	    ./sh/trilinos-v13.sh --jobs=16 --prefix=${prefix} --openmp \
+				 --modules --version=${TRILINOS_VERSION}
+	    ;;
+    esac
 }
 
 function trilinosPackageConfigFile {
@@ -223,9 +237,9 @@ function trilinosInstallModuleFile {
 
 function trilinosInstallationTest {
 
-    ${test_cce} && trilinosTest PrgEnv-cray
-    ${test_gnu} && trilinosTest PrgEnv-gnu
-    ${test_amd} && trilinosTest PrgEnv-aocc
+    [[ ${test_cce} ]] && trilinosTest PrgEnv-cray
+    [[ ${test_gnu} ]] && trilinosTest PrgEnv-gnu
+    [[ ${test_amd} ]] && trilinosTest PrgEnv-aocc
 }
 
 function trilinosTest {

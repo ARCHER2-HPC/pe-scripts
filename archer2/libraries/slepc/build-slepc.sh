@@ -7,7 +7,6 @@ script_dir="$(dirname "${script}")"
 script_root="$(dirname "${script%/*/*}")"
 
 source ${script_root}/pkgconfig-lib.sh
-source ${script_root}/versions.sh
 source ${script_root}/command_line.sh
 
 function main {
@@ -190,6 +189,8 @@ function slepcInstallModuleFileLua {
 
     cat ${module_preamble}     > ${module_file}
     cat ${module_boilerplate} >> ${module_file}
+
+    sed -i "s/PETSC_VERSION_TAG/${PETSC_VERSION}/" ${module_file}
 
     module use ${module_dir}
     module load slepc/${SLEPC_VERSION}

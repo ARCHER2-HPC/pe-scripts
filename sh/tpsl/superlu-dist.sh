@@ -10,6 +10,7 @@ VERSIONS="
   6.1.1:35d25cff592c724439870444ed45e1d1d15ca2c65f02ccd4b83a6d3c9d220bd1
   6.3.1:3787c2755acd6aadbb4d9029138c293a7570a2ed228806676edcc7e1d3f5a1d3
   6.4.0:cb9c0b2ba4c28e5ed5817718ba19ae1dd63ccd30bc44c8b8252b54f5f04a44cc
+  8.1.2:7b16c442bb01ea8b298c0aab9a2584aa4615d09786aac968cb2f3118c058206b
 "
 
 _pwd(){ CDPATH= cd -- $1 && pwd; }
@@ -48,6 +49,8 @@ tar xf superlu-dist-$VERSION.tar.gz \
 
 cd superlu_dist-$VERSION
 
+case $VERSION in
+  6*)
 patch -f -p1 <$top_dir/../patches/superlu-dist-omp.patch \
   || fn_error "could not patch"
 patch -f -p1 <<'EOF'
@@ -77,6 +80,8 @@ without adding any additional libraries.  User must configure with
      find_package(LAPACK)
 
 EOF
+;;
+esac
 
 if test ${make_using_modules} -eq 1; then
   # Convince cmake that we can find PARMETIS

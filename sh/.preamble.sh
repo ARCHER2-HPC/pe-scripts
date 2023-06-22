@@ -270,6 +270,9 @@ case "$compiler" in
     FFLAGS="-O2 -F -em -ef -hnocaf"
     CFLAGS="-O3 -ffast-math"
     PE_LIBS="-lfi -lf -lu -lcraymath -lcraymp -lm"
+    case ${CRAY_CC_VERSION} in
+      15.*) FFLAGS="${FFLAGS} -dC";;
+    esac
     ;;
   gnu)
     CFLAGS="-O3 -ffast-math"
@@ -281,7 +284,8 @@ case "$compiler" in
     PE_LIBS="-lgfortran -lgcc"
     OMPLIBS="-lgomp"
     case $GCC_VERSION in
-      10.*) FFLAGS="$FFLAGS -fallow-argument-mismatch" ;;
+      10.*) FFLAGS="$FFLAGS -fallow-argument-mismatch";;
+      11.*) FFLAGS="$FFLAGS -fallow-argument-mismatch";;
     esac
     case $CRAY_CPU_TARGET in
       x86_64) ARCHFLAGS="$X86FLAGS" ;;
