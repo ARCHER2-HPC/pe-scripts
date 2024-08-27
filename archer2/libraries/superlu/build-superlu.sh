@@ -79,12 +79,12 @@ function superluBuild {
 
     local prefix=${1}
     
-    superluClean
+#    superluClean
     superluBuildSerial ${prefix}
     superluPackageConfigFiles ${prefix}
 
     # Remove shared objects from package config stage
-    rm ${prefix}/lib/lib*.so
+#    rm ${prefix}/lib/lib*.so
 
 }
 
@@ -104,7 +104,7 @@ function superluBuildSerial {
     local newname=libsuperlu_${pe}.a
 
     mv ${prefix}/lib/libsuperlu.a ${prefix}/lib/${newname}
-    ccSharedFromStatic ${prefix}/lib superlu_${pe}
+#    ccSharedFromStatic ${prefix}/lib superlu_${pe}
 }
 
 function superluPackageConfigFiles {
@@ -189,14 +189,16 @@ function superluInstallModuleFile {
 
 }
 
-function superluInstallationTest {
+# Versions 5 ...
 
-    ${test_cce} && superluTest PrgEnv-cray
-    ${test_gnu} && superluTest PrgEnv-gnu
-    ${test_amd} && superluTest PrgEnv-aocc
+function superluInstallationTest_v5 {
+
+    ${test_cce} && superluTest_v5 PrgEnv-cray
+    ${test_gnu} && superluTest_v5 PrgEnv-gnu
+    ${test_amd} && superluTest_v5 PrgEnv-aocc
 }
 
-function superluTest {
+function superluTest_v5 {
 
     local prgenv=${1}
     local module_use=$(moduleInstallDirectory)
@@ -258,6 +260,72 @@ function superluTest {
 
     ./df77exm  < ../EXAMPLE/g20.rua
     ./zf77exm  < ../EXAMPLE/cg20.cua
+
+    cd -
+    module unload superlu
+}
+
+# Versions 6 onward ...
+
+function superluInstallationTest {
+
+    ${test_cce} && superluTest PrgEnv-cray
+    ${test_gnu} && superluTest PrgEnv-gnu
+    ${test_amd} && superluTest PrgEnv-aocc
+}
+
+function superluTest {
+
+    local prgenv=${1}
+    local module_use=$(moduleInstallDirectory)
+    local version=${SUPERLU_VERSION}
+
+    printf "Superlu test for %s\n" "${prgenv}"
+
+    module load ${prgenv}
+    module use ${module_use}
+
+    module load superlu/${version}
+    printf "SUPERLU_DIR: %s\n" "${SUPERLU_DIR}"
+
+    # Provide make.inc
+    cp ${script_dir}/make.inc superlu-${version}
+
+    cd superlu-${version}/EXAMPLE
+    make clean
+    make
+
+    # Run examples
+    ./superlu
+
+    ./dlinsol   < g20.rua
+    ./dlinsolx  < g20.rua
+    ./dlinsolx1 < g20.rua
+    ./dlinsolx2 < g20.rua
+    ./dlinsolx3 < g20.rua
+
+    ./zlinsol   < cg20.cua
+    ./zlinsolx  < cg20.cua
+    ./zlinsolx1 < cg20.cua
+    ./zlinsolx2 < cg20.cua
+    ./zlinsolx3 < cg20.cua
+
+    ./ditersol  -h < g20.rua
+    ./ditersol1 -h < g20.rua
+    ./zitersol  -h < cg20.cua
+    ./zitersol1 -h < cg20.cua
+
+    cd -
+    
+    # Fortran (is similar)
+
+    cd superlu-${version}/FORTRAN
+
+    make clean
+    make
+
+    ./dfexm  < ../EXAMPLE/g20.rua
+    ./zfexm  < ../EXAMPLE/cg20.cua
 
     cd -
     module unload superlu
