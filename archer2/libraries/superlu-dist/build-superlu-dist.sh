@@ -15,9 +15,9 @@ function main {
 
     local install_root=${install_root_libs}/superlu-dist/${SUPERLUDIST_VERSION}
 
-    ${build_amd} && superludistBuildAocc ${install_root}
-    ${build_cce} && superludistBuildCray ${install_root}
-    ${build_gnu} && superludistBuildGnu  ${install_root}
+    [[ ${build_amd} ]] && superludistBuildAocc ${install_root}
+    [[ ${build_cce} ]] && superludistBuildCray ${install_root}
+    [[ ${build_gnu} ]] && superludistBuildGnu  ${install_root}
     
     superludistInstallModuleFileLua
     superludistInstallationTest
@@ -231,9 +231,9 @@ function superludistInstallModuleFile {
 
 function superludistInstallationTest {
 
-    ${test_cce} && superludistTest PrgEnv-cray
-    ${test_gnu} && superludistTest PrgEnv-gnu
-    ${test_amd} && superludistTest PrgEnv-aocc
+    [[ ${test_cce} ]] && superludistTest PrgEnv-cray
+    [[ ${test_gnu} ]] && superludistTest PrgEnv-gnu
+    [[ ${test_amd} ]] && superludistTest PrgEnv-aocc
 
 }
 
@@ -256,12 +256,10 @@ function superludistTest {
     # Run standard examples with the distribution with a doctored
     # Makefile
 
-    superludistClean
-    tar xf superlu-dist-${version}.tar.gz
-
     cd superlu_dist-${version}/EXAMPLE
 
     cp ${script_dir}/make.inc ../make.inc
+    make clean
     make
 
     slurmAllocRun "srun -n 4 pddrive -r 2 -c 2 g20.rua"
@@ -280,6 +278,8 @@ function superludistTest {
     slurmAllocRun "srun -n 10 pddrive4 g20.rua"
     slurmAllocRun "srun -n 4 pzdrive -r 2 -c 2 cg20.cua"
     slurmAllocRun "srun -n 10 pzdrive4 cg20.cua"    
+
+    make clean
 
     cd -
     module unload superlu-dist/${version}

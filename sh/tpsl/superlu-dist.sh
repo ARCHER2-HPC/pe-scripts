@@ -11,6 +11,7 @@ VERSIONS="
   6.3.1:3787c2755acd6aadbb4d9029138c293a7570a2ed228806676edcc7e1d3f5a1d3
   6.4.0:cb9c0b2ba4c28e5ed5817718ba19ae1dd63ccd30bc44c8b8252b54f5f04a44cc
   8.1.2:7b16c442bb01ea8b298c0aab9a2584aa4615d09786aac968cb2f3118c058206b
+  9.0.0:aa43d33d4b1b0f5f7b5ad7685e9a6bc25088832c6c74d2ab8f75a2c9f4e9e955
 "
 
 _pwd(){ CDPATH= cd -- $1 && pwd; }
@@ -50,6 +51,9 @@ tar xf superlu-dist-$VERSION.tar.gz \
 cd superlu_dist-$VERSION
 
 case $VERSION in
+  9*)
+    printf "Patches for version 9\n"
+  ;;
   6*)
 patch -f -p1 <$top_dir/../patches/superlu-dist-omp.patch \
   || fn_error "could not patch"
@@ -101,7 +105,9 @@ fi
 
 test "$?" = "0" \
   || fn_error "could not patch"
-rm -rf _build && mkdir _build && cd _build
+
+rm -rf _build-${PE_ENV} && mkdir _build-${PE_ENV} && cd _build-${PE_ENV}
+
 cmake \
   -DCMAKE_INSTALL_PREFIX="$prefix" \
   -DCMAKE_INSTALL_LIBDIR=lib \
@@ -128,13 +134,6 @@ cmake \
   -DMPIEXEC_MAX_NUMPROCS:STRING="128" \
   .. \
   || fn_error "configuration failed"
-case "$compiler" in
-  cray)
-    find . \( -name 'link.txt' -o -name 'flags.make' \) \
-      -exec sed -i 's/-std=c++11/-hstd=c++11/g' {} \+ \
-      || fn_error "patching C++11 flags for CCE"
-    ;;
-esac
 
 
 make --jobs=$make_jobs \
