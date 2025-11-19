@@ -6,7 +6,7 @@ prereq_any("PrgEnv-cray", "PrgEnv-gnu", "PrgEnv-aocc")
 
 depends_on("cray-hdf5-parallel")
 depends_on("hypre/HYPRE_VERSION_TAG")
-depends_on("mumps/MUMPS_VERSION_TAG")
+depends_on("scotch/SCOTCH_VERSION_TAG")
 depends_on("superlu/SUPERLU_VERSION_TAG")
 depends_on("superlu-dist/SUPERLU_DIST_VERSION_TAG")
 

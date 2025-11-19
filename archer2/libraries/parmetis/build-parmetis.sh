@@ -15,11 +15,11 @@ function main {
 
     local install_root=${install_root_libs}/parmetis/${PARMETIS_VERSION}
 
-    ${build_cce} && parmetisBuildCray ${install_root}
-    ${build_gnu} && parmetisBuildGnu  ${install_root}
-    ${build_amd} && parmetisBuildAocc ${install_root}
+    [[ ${build_cce} ]] && parmetisBuildCray ${install_root}
+    [[ ${build_gnu} ]] && parmetisBuildGnu  ${install_root}
+    [[ ${build_amd} ]] && parmetisBuildAocc ${install_root}
 
-    parmetisInstallModuleFileLua
+    [[ ${build_lua} ]] && parmetisInstallModuleFileLua
     parmetisInstallationTest
 }
 
@@ -217,9 +217,9 @@ function parmetisInstallModuleFile {
 
 function parmetisInstallationTest {
 
-    ${test_cce} && parmetisTest PrgEnv-cray
-    ${test_gnu} && parmetisTest PrgEnv-gnu
-    ${test_amd} && parmetisTest PrgEnv-aocc
+    [[ ${test_cce} ]] && parmetisTest PrgEnv-cray
+    [[ ${test_gnu} ]] && parmetisTest PrgEnv-gnu
+    [[ ${test_amd} ]] && parmetisTest PrgEnv-aocc
 
     printf "Completed parmetis installation successfully\n"
 }

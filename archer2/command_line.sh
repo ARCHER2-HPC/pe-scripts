@@ -9,8 +9,9 @@ export LMOD_PAGER="None"
 source $(pwd)/archer2/versions.sh
 
 # Default location, PE
+# /mnt/lustre/a2fs-work4 is the physical location for modules
 cse_root=/work/y07/shared
-cpe_version=22.12
+cpe_version=23.09
 
 # Common functions plus command line argument processing
 
@@ -19,9 +20,13 @@ prefix=${TMPDIR:-/tmp}/$USER
 build_cce=true
 build_gnu=true
 build_amd=true
+
+build_lua=true
+
 test_cce=true
 test_gnu=true
 test_amd=true
+
 
 for arg in "$@" ; do
 

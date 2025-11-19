@@ -19,7 +19,7 @@ function main {
     [[ ${build_cce} ]] && superludistBuildCray ${install_root}
     [[ ${build_gnu} ]] && superludistBuildGnu  ${install_root}
     
-    superludistInstallModuleFileLua
+    [[ ${build_lua} ]] && superludistInstallModuleFileLua
     superludistInstallationTest
 
     printf "ARCHER2: Test and installation of SuperLU_DIST complete\n"

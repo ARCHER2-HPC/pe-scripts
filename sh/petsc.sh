@@ -15,6 +15,9 @@ VERSIONS='
   3.13.6:67ca2cf3040d08fdc51d27f660ea3157732b24c2f47aae1b19d63f62a39842c2
   3.14.2:87a04fd05cac20a2ec47094b7d18b96e0651257d8c768ced2ef7db270ecfb9cb
   3.18.5:df73ae13a4c5758325a9d69350cac423742657d8a8fc5782504b0e469ce46499
+  3.23.4:711b2ad46b14f12fe74fcbc7f9b514444646f1e7b20ed57dc7482d34dfc4ca77
+  3.24.0:cc9063d80cae3ca87dd34586a92bac49613818a0689d9eac1bd91a799c5d0983
+  3.24.1:d77f3fd5187a72ce5b68a056aa8fcccd37b6dc7a388991d1d8fa0bde32b0abc8
 '
 
 _pwd(){ CDPATH= cd -- $1 && pwd; }
@@ -32,6 +35,13 @@ top_dir=`_dirname "$0"`
 ##  - TPSL (superlu, superlu-dist, metis, parmetis, ptscotch, mumps, hypre, sundials)
 ##  - hdf5
 ##
+
+## MUMPS support
+## can cause link time problems when using CC
+## so can switch off ...
+
+unset mumps_support
+
 
 fn_check_includes()
 {
@@ -62,15 +72,22 @@ fn_check_includes ParMETIS parmetis.h
 fn_check_includes SuperLU slu_ddefs.h
 fn_check_includes SuperLU_DIST superlu_dist_config.h
 fn_check_includes PT-Scotch ptscotch.h
-fn_check_includes MUMPS mumps_c_types.h
+
+[[ ${mumps_support} ]] && fn_check_includes MUMPS mumps_c_types.h
+
 # Note Sundials is not actually used at present...
 fn_check_includes HYPRE HYPRE.h
 #fn_check_includes SUNDIALS sundials/sundials_types.h
 fn_check_includes HDF5 hdf5.h
 
+# ftp has been replaced.
+#  http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-lite-XXX.tar.gz
+#  which may mean hashes have changes for <= 3.18.5
+
 test -e petsc-lite-$VERSION.tar.gz \
-  || $WGET http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-lite-$VERSION.tar.gz \
+  || $WGET https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-lite-$VERSION.tar.gz \
   || fn_error "could not fetch source"
+
 echo "$SHA256SUM  petsc-lite-$VERSION.tar.gz" | sha256sum --check \
   || fn_error "source hash mismatch"
 tar xf petsc-lite-$VERSION.tar.gz \
@@ -106,6 +123,10 @@ case "$compiler" in
     # Similarly:
     CPPFLAGS="-Wno-unused-command-line-argument $CPPFLAGS"
     ;;
+  gnu)
+    # Relax line truncation errors
+    FFLAGS="${FFLAGS} -ffree-line-length-none"
+    ;;
   intel)
     # For proper linking of fortran against c++
     LIBS="-lstdc++"
@@ -117,6 +138,8 @@ case "$compiler" in
 esac
 
 # Needs to be restricted to Archer2
+
+
 case "$compiler" in
   # Petsc wants to link MUMPS with CC, so..
   crayclang)
@@ -146,6 +169,14 @@ else
   conf_with_superlu_dist_dir="--with-superlu_dist-dir=${prefix}"
   conf_with_hypre_dir="--with-hypre-dir=${prefix}"
 fi
+
+# Optional MUMPS support
+if [[ ${mumps_suppot} ]]; then
+  mumps_config_options="--with-mumps=1 --with-mumps-include=${conf_with_mumps_include} --with-mumps-lib=${conf_with_mumps_lib}"
+else
+  mumps_config_options="--with-mumps=0"
+fi
+
 
 cat >configure-petsc.sh <<EOF
 #!/bin/sh
@@ -185,7 +216,7 @@ exec ./configure \\
   --with-fc=ftn \\
   --with-fortran-datatypes=1 \\
   --with-fortran-interfaces=1 \\
-  --with-fortran-bindings=1 \\
+  --with-fortran-bindings=0 \\
   --with-fortranlib-autodetect=0 \\
   --with-ranlib=ranlib \\
   --with-scalar-type=real \\
@@ -206,14 +237,12 @@ exec ./configure \\
   --with-metis=1 \\
   ${conf_with_metis_dir} \\
   --with-hypre=1 \\
+  ${mumps_config_options} \\
   ${conf_with_hypre_dir} \\
   --with-scalapack=1 \\
   --with-ptscotch=1 \\
   --with-ptscotch-include="${conf_with_ptscotch_include}" \\
   --with-ptscotch-lib="${conf_with_ptscotch_lib}" \\
-  --with-mumps=1 \\
-  --with-mumps-include="${conf_with_mumps_include}" \\
-  --with-mumps-lib="${conf_with_mumps_lib}" \\
   --with-hdf5=1 \\
   --CFLAGS="$CFLAGS $OMPFLAG" \\
   --CPPFLAGS="-I$prefix/include $CPPFLAGS" \\
@@ -234,6 +263,8 @@ make MAKE_NP=$make_jobs PETSC_DIR=`pwd` PETSC_ARCH=$CRAY_CPU_TARGET all \
   || fn_error "build failed"
 make PETSC_DIR=`pwd` PETSC_ARCH=$CRAY_CPU_TARGET install \
   || fn_error "install failed"
+
+
 
 # Local Variables:
 # indent-tabs-mode:nil

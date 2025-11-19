@@ -19,7 +19,7 @@ function main {
     [[ ${build_gnu} ]] && mumpsBuildGnu  ${install_root}
     [[ ${build_amd} ]] && mumpsBuildAocc ${install_root}
 
-    mumpsInstallModuleFileLua
+    [[ ${build_lua} ]] && mumpsInstallModuleFileLua
     mumpsInstallationTest
 
     printf "ARCHER2: MUMPS installation/test complete\n"
@@ -240,9 +240,9 @@ function mumpsInstallModuleFile {
 
 function mumpsInstallationTest {
 
-    ${test_cce} && mumpsTest PrgEnv-cray
-    ${test_gnu} && mumpsTest PrgEnv-gnu
-    ${test_amd} && mumpsTest PrgEnv-aocc
+    [[ ${test_cce} ]] && mumpsTest PrgEnv-cray
+    [[ ${test_gnu} ]] && mumpsTest PrgEnv-gnu
+    [[ ${test_amd} ]] && mumpsTest PrgEnv-aocc
 
 }
 

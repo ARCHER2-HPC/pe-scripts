@@ -19,7 +19,7 @@ function main {
     [[ ${build_gnu} ]] && petscBuildGnu  ${install_root}
     [[ ${build_amd} ]] && petscBuildAocc ${install_root}
 
-    petscInstallModuleFileLua
+    [[ ${build_lua} ]] && petscInstallModuleFileLua
     petscInstallationTest
 
     printf "ARCHER2: PETSC install/test complete\n"
@@ -32,7 +32,7 @@ function petscLoadModuleDependencies {
     # Pending AOCC pkgconfig fix...
     module load cray-hdf5-parallel/${CRAY_HDF5_PARALLEL_VERSION}
     module load hypre/${HYPRE_VERSION}
-    module load mumps/${MUMPS_VERSION}
+    module load scotch/${SCOTCH_VERSION}
     module load superlu/${SUPERLU_VERSION}
     module load superlu-dist/${SUPERLUDIST_VERSION}
 
@@ -42,7 +42,7 @@ function petscUnloadModuleDependencies {
 
     module unload cray-hdf5-parallel/${CRAY_HDF5_PARALLEL_VERSION}
     module unload hypre/${HYPRE_VERSION}
-    module unload mumps/${MUMPS_VERSION}
+    module unload scotch/${SCOTCH_VERSION}
     module unload superlu/${SUPERLU_VERSION}
     module unload superlu-dist/${SUPERLUDIST_VERSION}
     
@@ -164,7 +164,7 @@ function petscInstallModuleFileLua {
     cat ${module_boilerplate} >> ${module_file}
 
     sed -i "s/HYPRE_VERSION_TAG/${HYPRE_VERSION}/" ${module_file}
-    sed -i "s/MUMPS_VERSION_TAG/${MUMPS_VERSION}/" ${module_file}
+    sed -i "s/SCOTCH_VERSION_TAG/${SCOTCH_VERSION}/" ${module_file}
     sed -i "s/SUPERLU_VERSION_TAG/${SUPERLU_VERSION}/" ${module_file}
     sed -i "s/SUPERLU_DIST_VERSION_TAG/${SUPERLUDIST_VERSION}/" ${module_file}
 
@@ -204,7 +204,6 @@ function petscInstallModuleFile {
     sed -i "s%TEMPLATE_PARMETIS_VERSION%${PARMETIS_VERSION}%" ${module_file}
     sed -i "s%TEMPLATE_HYPRE_VERSION%${HYPRE_VERSION}%" ${module_file}
     sed -i "s%TEMPLATE_SCOTCH_VERSION%${SCOTCH_VERSION}%" ${module_file}
-    sed -i "s%TEMPLATE_MUMPS_VERSION%${MUMPS_VERSION}%" ${module_file}
     sed -i "s%TEMPLATE_SUPERLU_VERSION%${SUPERLU_VERSION}%" ${module_file}
     sed -i "s%TEMPLATE_SUPERLUDIST_VERSION%${SUPERLUDIST_VERSION}%" ${module_file}
     
@@ -216,9 +215,9 @@ function petscInstallModuleFile {
 
 function petscInstallationTest {
 
-    ${test_cce} && petscTest PrgEnv-cray
-    ${test_gnu} && petscTest PrgEnv-gnu
-    ${test_amd} && petscTest PrgEnv-aocc
+    [[ ${test_cce} ]] && petscTest PrgEnv-cray
+    [[ ${test_gnu} ]] && petscTest PrgEnv-gnu
+    [[ ${test_amd} ]] && petscTest PrgEnv-aocc
 }
 
 function petscTest {

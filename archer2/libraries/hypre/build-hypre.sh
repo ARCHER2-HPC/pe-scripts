@@ -15,11 +15,11 @@ function main {
 
     local install_root=${install_root_libs}/hypre/${HYPRE_VERSION}
 
-    ${build_cce} && hypreBuildCray ${install_root}
-    ${bluid_gnu} && hypreBuildGnu  ${install_root}
-    ${build_amd} && hypreBuildAocc ${install_root}
+    [[ ${build_cce} ]] && hypreBuildCray ${install_root}
+    [[ ${build_gnu} ]] && hypreBuildGnu  ${install_root}
+    [[ ${build_amd} ]] && hypreBuildAocc ${install_root}
 
-    hypreInstallModuleFileLua
+    [[ ${build_lua} ]] && hypreInstallModuleFileLua
     hypreInstallationTest
 
     printf "ARCHER2: HYPRE install/test successful\n"
@@ -209,9 +209,9 @@ function hypreInstallModuleFile {
 
 function hypreInstallationTest {
 
-    ${test_cce} && hypreTest PrgEnv-cray
-    ${test_gnu} && hypreTest PrgEnv-gnu
-    ${test_amd} && hypreTest PrgEnv-aocc
+    [[ ${test_cce} ]] && hypreTest PrgEnv-cray
+    [[ ${test_gnu} ]] && hypreTest PrgEnv-gnu
+    [[ ${test_amd} ]] && hypreTest PrgEnv-aocc
 
 }
 
@@ -241,14 +241,27 @@ function hypreTest {
     sed -i 's/Prefix -np/Prefix -n/' runtest.sh
 
     slurmAllocRun "./runtest.sh -t TEST_examples/*sh"
+    printf "Completed test examples\n"
 
     # Compile OpenMP tests in test directory; but not run
-    cp ${script_dir}/Makefile.test Makefile
+    # More extensive testing probably means taking the cmake test route
+
+    case ${HYPRE_VERSION} in
+	2.33.0)
+	    printf "Use existing Makefile\n"
+	    ;;
+	*)
+	    cp ${script_dir}/Makefile.test Makefile
+	    ;;
+    esac
+
     make clean
     make all
+    printf "Completed test compilation\n"
 
     make clean
     make all COMPFLAG=-fopenmp FOMPFLAG=-fopenmp
+    printf "Completed test OpenMP compilation\n"
     
     cd -
     module unload hypre

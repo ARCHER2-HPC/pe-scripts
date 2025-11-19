@@ -56,6 +56,26 @@ Modulefiles are installed to
 
 Some details for each package appear in the respective directories.
 
+### Post upgrade 2025
+
+| Package      | Version  | Dependencies            | OpenMP? | MPI? |
+|--------------|----------|-------------------------|---------|------|
+| hypre        | 2.33.0   | none                    | yes     | yes  |
+| metis        | 5.1.0    | none                    | yes     | no   |
+| mumps        | 5.8.1    | metis, parmetis, scotch | yes     | yes  |
+| parmetis     | 4.0.3    | none                    | yes     | yes  |
+| scotch       | 7.0.10   | none                    | no      | yes  |
+| superlu      | 7.0.1    | none                    | no      | no   |
+| superlu-dist | 9.1.0    | metis, parmetis         | yes     | yes  |
+| petsc        | 3.24.1   | metis, parmetis, scotch | no      | yes  |
+|              |          | hypre, superlu[-dist]   |         |      |
+|              |          | cray-hdf5-parallel      |         |      |
+| slepc        | 3.24.0   | petsc                   | no      | yes  |
+
+Note there is no MUMPS support in PETSc owing to problems arising from
+the C++ link stage with MUMPs Fortran libraries.
+
+
 ### Post upgrade 2023
 
 | Package      | Version  | Dependencies            | OpenMP? | MPI? |

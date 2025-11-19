@@ -19,7 +19,7 @@ function main {
     [[ ${build_cce} ]] && scotchBuildCray ${install_root}
     [[ ${build_gnu} ]] && scotchBuildGnu  ${install_root}
     
-    scotchInstallModuleFileLua
+    [[ ${build_lua} ]] && scotchInstallModuleFileLua
     scotchInstallationTest ${install_root}
 
     printf "ARCHER2: Scotch installation test completed successfully\n"
@@ -122,6 +122,16 @@ function scotchBuildMPI {
 
     local pe=$(peEnvLower)
     local prefixlib="${prefix}/lib"
+
+    # versions >= 7.0.6 produce lib64 instead of lib, so make a link
+    case ${SCOTCH_VERSION} in
+	7.0.10)
+	    ln -s ${prefix}/lib64 ${prefixlib}
+	    ;;
+	7.0.6)
+	    ln -s ${prefix}/lib64 ${prefixlib}
+	    ;;
+    esac
 
     # Postfix ${pe}_mpi
 
@@ -289,8 +299,8 @@ function scotchTestv7 {
 
     cd scotch-v${SCOTCH_VERSION}/src/check
 
-    cc test_common_file_compress.c -lz -lbz2
-    cc test_common_random.c
+    cc -DSCOTCH_RENAME test_common_file_compress.c -lz -lbz2
+    cc -DSCOTCH_RENAME test_common_random.c
     cc -DSCOTCH_RENAME test_common_thread.c
     cc -DSCOTCH_RENAME test_fibo.c
     cc test_libesmumps.c

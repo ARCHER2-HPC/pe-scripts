@@ -19,7 +19,9 @@ function main {
     [[ ${build_cce} ]] && superluBuildCray ${install_root}
     [[ ${build_gnu} ]] && superluBuildGnu  ${install_root}
 
-    superluInstallModuleFileLua
+    # Note the v5 and v6 tests are separated
+
+    [[ ${build_lua} ]] && superluInstallModuleFileLua
     superluInstallationTest
 
     printf "ARCHER2: installation (and test) of superlu successful\n"
@@ -193,9 +195,9 @@ function superluInstallModuleFile {
 
 function superluInstallationTest_v5 {
 
-    ${test_cce} && superluTest_v5 PrgEnv-cray
-    ${test_gnu} && superluTest_v5 PrgEnv-gnu
-    ${test_amd} && superluTest_v5 PrgEnv-aocc
+    [[ ${test_cce} ]] && superluTest_v5 PrgEnv-cray
+    [[ ${test_gnu} ]] && superluTest_v5 PrgEnv-gnu
+    [[ ${test_amd} ]] && superluTest_v5 PrgEnv-aocc
 }
 
 function superluTest_v5 {
@@ -224,8 +226,10 @@ function superluTest_v5 {
 
     sed -i 's/-I\$(HEADER)//' Makefile
 
+    # Clang 16 introduced a fatal error for implicit function declarations
+    # so building with later clang-based compilers requires ...
     make clean
-    make
+    make CFLAGS="-Wno-implicit-function-declaration -Wno-implicit-int"
 
     # Run examples
     ./superlu
@@ -280,7 +284,7 @@ function superluTest {
     local module_use=$(moduleInstallDirectory)
     local version=${SUPERLU_VERSION}
 
-    printf "Superlu test for %s\n" "${prgenv}"
+    printf "Superlu v6 test for %s\n" "${prgenv}"
 
     module load ${prgenv}
     module use ${module_use}
@@ -292,6 +296,10 @@ function superluTest {
     cp ${script_dir}/make.inc superlu-${version}
 
     cd superlu-${version}/EXAMPLE
+
+    # This file is not needed and will cause an error if compiled
+    sed -i "s%dreadtriple\_noheader.o%%" Makefile
+
     make clean
     make
 

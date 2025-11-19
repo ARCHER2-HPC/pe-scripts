@@ -12,6 +12,8 @@ PACKAGE=scotch
 VERSIONS='
   7.0.1:0618e9bc33c02172ea7351600fce4fccd32fe00b3359c4aabb5e415f17c06fed
   7.0.3:5b5351f0ffd6fcae9ae7eafeccaa5a25602845b9ffd1afb104db932dd4d4f3c5
+  7.0.6:b44acd0d2f53de4b578fa3a88944cccc45c4d2961cd8cefa9b9a1d5431de8e2b
+  7.0.10:8327725a08cdd4fc7575e291251883b4f93f75b07a54bc58f89f50dcbba7b244
 '
 
 _pwd(){ CDPATH= cd -- $1 && pwd; }
@@ -68,7 +70,7 @@ test "$?" = "0" || fn_error "configuration failed"
 # Don;t run the tests if no salloc is available
 
 make --jobs=1   || fn_error "build failed"
-#make test       || fn_error "tests failed"
+make test       || fn_error "tests failed"
 make install    || fn_error "install failed"
 
 fn_checkpoint_tpsl
